@@ -12,6 +12,7 @@ import { useTripStore } from "@/stores/trip-store";
 export interface PlannerTopBarProps {
   onTogglePanel: () => void;
   panelOpen: boolean;
+  onPreviewItinerary?: () => void;
 }
 
 // ------------------------------------------------------------------
@@ -63,7 +64,7 @@ function SaveLabel({ status }: { status: SaveStatus }) {
 // Component
 // ------------------------------------------------------------------
 
-export function PlannerTopBar({ onTogglePanel, panelOpen }: PlannerTopBarProps) {
+export function PlannerTopBar({ onTogglePanel, panelOpen, onPreviewItinerary }: PlannerTopBarProps) {
   const board = useTripStore((s) => s.board);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
   const prevBoardRef = useRef(board);
@@ -122,8 +123,17 @@ export function PlannerTopBar({ onTogglePanel, panelOpen }: PlannerTopBarProps) 
         </span>
       </div>
 
-      {/* Right — auto-save indicator */}
-      <div className="flex items-center gap-1.5">
+      {/* Right — preview itinerary + auto-save indicator */}
+      <div className="flex items-center gap-2">
+        {onPreviewItinerary && (
+          <button
+            type="button"
+            onClick={onPreviewItinerary}
+            className="rounded-md px-2.5 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+          >
+            Preview Itinerary
+          </button>
+        )}
         <SaveDot status={saveStatus} />
         <SaveLabel status={saveStatus} />
       </div>
