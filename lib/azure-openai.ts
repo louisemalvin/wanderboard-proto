@@ -113,8 +113,9 @@ export class StructuredResponseError extends Error {
 function stripJsonSchemaMeta(
   schema: Record<string, unknown>,
 ): Record<string, unknown> {
-  const { $schema: _, ...rest } = schema;
-  return rest;
+  const result = { ...schema };
+  delete result.$schema;
+  return result;
 }
 
 /**

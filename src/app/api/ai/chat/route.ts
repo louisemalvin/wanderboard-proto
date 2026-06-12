@@ -10,7 +10,7 @@ import {
   generateStructuredResponse,
   StructuredResponseError,
 } from "@/lib/azure-openai";
-import type { TripBoard, TripPace, BudgetLevel } from "@/lib/trip-types";
+import type { TripBoard } from "@/lib/trip-types";
 
 // ------------------------------------------------------------------
 // Shared error-response builder

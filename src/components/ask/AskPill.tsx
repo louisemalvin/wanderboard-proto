@@ -87,8 +87,8 @@ export function AskPill() {
   // ---- Health check on mount ----
   useEffect(() => {
     if (USE_STUB) {
-      setPillState("idle");
-      return;
+      const id = setTimeout(() => setPillState("idle"), 0);
+      return () => clearTimeout(id);
     }
 
     let cancelled = false;
@@ -169,7 +169,6 @@ export function AskPill() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        const code = body?.error?.code;
         const msg = body?.error?.message ?? "Something went wrong. Please try again.";
 
         // STUB: If route returns 404/501 (not live), fall back to stub

@@ -89,24 +89,15 @@ export default function HomePage() {
     };
   }, []);
 
-  // ---- Recent trips ----
-  const [recentTrips, setRecentTrips] = useState<RecentTrip[]>([]);
-  const [recentTripsError, setRecentTripsError] = useState<string | null>(null);
-  const [recentTripsLoading, setRecentTripsLoading] = useState(true);
-
-  useEffect(() => {
-    setRecentTripsLoading(true);
-    setRecentTripsError(null);
+  // ---- Recent trips (initialized synchronously from localStorage) ----
+  const [recentTrips, setRecentTrips] = useState<RecentTrip[]>(() => {
     try {
-      const trips = readRecentTrips();
-      setRecentTrips(trips);
+      return readRecentTrips();
     } catch {
-      setRecentTripsError("Could not load recent trips.");
-      setRecentTrips([]);
-    } finally {
-      setRecentTripsLoading(false);
+      return [];
     }
-  }, []);
+  });
+  const [recentTripsError, setRecentTripsError] = useState<string | null>(null);
 
   // Refresh recent trips after creation
   const refreshRecentTrips = useCallback(() => {
@@ -144,7 +135,7 @@ export default function HomePage() {
       createTrip(board);
       refreshRecentTrips();
       router.push("/planner");
-    } catch (err) {
+    } catch {
       setErrorState({
         message: "Could not create sample trip. Please try again.",
       });
@@ -159,7 +150,7 @@ export default function HomePage() {
       createTrip(board);
       refreshRecentTrips();
       router.push("/planner");
-    } catch (err) {
+    } catch {
       setErrorState({
         message: "Could not create empty board. Please try again.",
       });
@@ -229,7 +220,7 @@ export default function HomePage() {
         <RecentTripsList
           trips={recentTrips}
           onSelect={handleSelectTrip}
-          isLoading={recentTripsLoading}
+          isLoading={false}
           error={recentTripsError}
         />
 
