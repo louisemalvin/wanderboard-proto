@@ -37,8 +37,8 @@ export interface TripState {
 // ------------------------------------------------------------------
 
 export interface TripActions {
-  /** Create a new trip. If board is omitted, generates an empty one. */
-  createTrip: (board?: TripBoard) => void;
+  /** Create a new trip. If board is omitted, generates an empty one. Returns false if localStorage persistence fails. */
+  createTrip: (board?: TripBoard) => boolean;
   /** Load a trip from localStorage by id. Returns undefined if not found. */
   loadTrip: (tripId: string) => TripBoard | undefined;
   /** Merge partial fields into an existing trip. */
@@ -105,11 +105,11 @@ function writeStorage(key: string, value: unknown): boolean {
   }
 }
 
-function persistBoard(board: TripBoard): void {
-  writeStorage(getTripKey(board.id), board);
+function persistBoard(board: TripBoard): boolean {
+  return writeStorage(getTripKey(board.id), board);
 }
 
-function upsertRecentTrip(board: TripBoard): void {
+function upsertRecentTrip(board: TripBoard): boolean {
   const trips = readStorage<RecentTrip[]>(RECENT_TRIPS_KEY) ?? [];
   const existingIdx = trips.findIndex((t) => t.id === board.id);
   const header: RecentTrip = {
@@ -125,7 +125,7 @@ function upsertRecentTrip(board: TripBoard): void {
     trips.splice(existingIdx, 1);
   }
   trips.unshift(header);
-  writeStorage(RECENT_TRIPS_KEY, trips.slice(0, MAX_RECENT_TRIPS));
+  return writeStorage(RECENT_TRIPS_KEY, trips.slice(0, MAX_RECENT_TRIPS));
 }
 
 function createEmptyBoard(): TripBoard {
@@ -169,9 +169,15 @@ export const useTripStore = create<TripStore>()(
 
       createTrip: (board?: TripBoard) => {
         const tripBoard = board ?? createEmptyBoard();
-        persistBoard(tripBoard);
-        upsertRecentTrip(tripBoard);
+        const didPersistBoard = persistBoard(tripBoard);
+        const didPersistRecentTrip = upsertRecentTrip(tripBoard);
+
+        if (!didPersistBoard || !didPersistRecentTrip) {
+          return false;
+        }
+
         set({ currentTripId: tripBoard.id, board: tripBoard });
+        return true;
       },
 
       loadTrip: (tripId: string): TripBoard | undefined => {

@@ -22,6 +22,16 @@ interface ErrorState {
   message: string;
 }
 
+interface GenerateBoardErrorResponse {
+  error?: {
+    message?: string;
+  };
+}
+
+interface GenerateBoardSuccessResponse {
+  board?: unknown;
+}
+
 // ------------------------------------------------------------------
 // Helpers
 // ------------------------------------------------------------------
@@ -62,6 +72,36 @@ function createEmptyBoard(): TripBoard {
   };
 }
 
+function getPersistenceFailureMessage(boardType: string): string {
+  return `Could not save ${boardType}. Please free up browser storage or enable localStorage, then try again.`;
+}
+
+function isTripBoard(value: unknown): value is TripBoard {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as TripBoard).id === "string" &&
+    typeof (value as TripBoard).title === "string" &&
+    typeof (value as TripBoard).destinationText === "string" &&
+    typeof (value as TripBoard).durationDays === "number" &&
+    Array.isArray((value as TripBoard).days) &&
+    typeof (value as TripBoard).savedPlaces === "object" &&
+    (value as TripBoard).savedPlaces !== null &&
+    Array.isArray((value as TripBoard).dayPlans)
+  );
+}
+
+async function readGenerateBoardJson(
+  response: Response,
+): Promise<GenerateBoardSuccessResponse & GenerateBoardErrorResponse> {
+  try {
+    return (await response.json()) as GenerateBoardSuccessResponse &
+      GenerateBoardErrorResponse;
+  } catch {
+    return {};
+  }
+}
+
 // ------------------------------------------------------------------
 // Page component
 // ------------------------------------------------------------------
@@ -80,11 +120,16 @@ export default function HomePage() {
   // ---- Store hydration ----
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
+    let cancelled = false;
+    const markHydrated = () => {
+      if (!cancelled) setHydrated(true);
+    };
     const unsubFinish = useTripStore.persist.onFinishHydration(() =>
-      setHydrated(true)
+      markHydrated()
     );
-    useTripStore.persist.rehydrate();
+    Promise.resolve(useTripStore.persist.rehydrate()).finally(markHydrated);
     return () => {
+      cancelled = true;
       unsubFinish();
     };
   }, []);
@@ -108,19 +153,94 @@ export default function HomePage() {
     }
   }, []);
 
-  // ---- Create board → Error flow ----
-  const handleCreateBoard = useCallback(() => {
+  // ---- Create board ----
+  const handleCreateBoard = useCallback(async () => {
+    if (isCreating) return;
+
     setErrorState(null);
     setIsCreating(true);
-    // Phase 4: no AI route — immediately show error.
-    // Simulate a brief delay so the spinner is visible.
-    setTimeout(() => {
-      setIsCreating(false);
-      setErrorState({
-        message: "Couldn't generate your board right now.",
+
+    const trimmedDestination = details.destination.trim();
+    const interests = details.interests
+      .split(",")
+      .map((interest) => interest.trim())
+      .filter(Boolean);
+
+    const requestBody: {
+      prompt: string;
+      destination?: string;
+      durationDays: number;
+      pace: OptionalDetails["pace"];
+      budgetLevel: OptionalDetails["budgetLevel"];
+      interests?: string[];
+    } = {
+      prompt,
+      durationDays: details.durationDays,
+      pace: details.pace,
+      budgetLevel: details.budgetLevel,
+    };
+
+    if (trimmedDestination) {
+      requestBody.destination = trimmedDestination;
+    }
+
+    if (interests.length > 0) {
+      requestBody.interests = interests;
+    }
+
+    try {
+      const response = await fetch("/api/ai/generate-board", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       });
-    }, 800);
-  }, []);
+
+      const data = await readGenerateBoardJson(response);
+
+      if (!response.ok) {
+        throw new Error(
+          data.error?.message ||
+            "The board generator is unavailable right now. Please try again, create a sample trip, or start with an empty board.",
+        );
+      }
+
+      if (!isTripBoard(data.board)) {
+        throw new Error(
+          "We couldn't read the generated board. Please try again, create a sample trip, or start with an empty board.",
+        );
+      }
+
+      const didCreateTrip = createTrip(data.board);
+      if (!didCreateTrip) {
+        throw new Error(getPersistenceFailureMessage("your board"));
+      }
+
+      refreshRecentTrips();
+      router.push("/planner");
+    } catch (error) {
+      setErrorState({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Couldn't generate your board. Please try again, create a sample trip, or start with an empty board.",
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  }, [
+    createTrip,
+    details.budgetLevel,
+    details.destination,
+    details.durationDays,
+    details.interests,
+    details.pace,
+    isCreating,
+    prompt,
+    refreshRecentTrips,
+    router,
+  ]);
 
   // ---- Retry (same as Create Board) ----
   const handleRetry = useCallback(() => {
@@ -132,12 +252,19 @@ export default function HomePage() {
     setErrorState(null);
     try {
       const board = createSampleTrip();
-      createTrip(board);
+      const didCreateTrip = createTrip(board);
+      if (!didCreateTrip) {
+        throw new Error(getPersistenceFailureMessage("sample trip"));
+      }
+
       refreshRecentTrips();
       router.push("/planner");
-    } catch {
+    } catch (error) {
       setErrorState({
-        message: "Could not create sample trip. Please try again.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Could not create sample trip. Please try again.",
       });
     }
   }, [createTrip, refreshRecentTrips, router]);
@@ -147,12 +274,19 @@ export default function HomePage() {
     setErrorState(null);
     try {
       const board = createEmptyBoard();
-      createTrip(board);
+      const didCreateTrip = createTrip(board);
+      if (!didCreateTrip) {
+        throw new Error(getPersistenceFailureMessage("empty board"));
+      }
+
       refreshRecentTrips();
       router.push("/planner");
-    } catch {
+    } catch (error) {
       setErrorState({
-        message: "Could not create empty board. Please try again.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Could not create empty board. Please try again.",
       });
     }
   }, [createTrip, refreshRecentTrips, router]);

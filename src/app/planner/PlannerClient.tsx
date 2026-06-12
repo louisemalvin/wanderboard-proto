@@ -15,7 +15,7 @@ import { PlacesPanel } from "@/components/planner/places-panel";
 import { DayPanel } from "@/components/planner/day-panel";
 import { AllPanel } from "@/components/planner/all-panel";
 import { AskPill } from "@/components/ask/AskPill";
-import { ItineraryDrawer } from "@/components/ask/ItineraryDrawer";
+import { ItineraryOverlay } from "@/components/ask/ItineraryOverlay";
 
 // ------------------------------------------------------------------
 // Dynamic map import (SSR disabled — Leaflet needs browser APIs)
@@ -66,7 +66,7 @@ export default function PlannerClient() {
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
 
   // ---- Hydrate persisted store state ----
   useEffect(() => {
@@ -150,7 +150,7 @@ export default function PlannerClient() {
       <PlannerTopBar
         onTogglePanel={() => setPanelOpen((v) => !v)}
         panelOpen={panelOpen}
-        onPreviewItinerary={() => setIsDrawerOpen(true)}
+        onPreviewItinerary={() => setIsOverlayOpen(true)}
       />
       <LayerTabs />
       <div className="flex flex-1 overflow-hidden">
@@ -168,9 +168,9 @@ export default function PlannerClient() {
           <AskPill />
         </main>
       </div>
-      <ItineraryDrawer
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+      <ItineraryOverlay
+        isOpen={isOverlayOpen}
+        onClose={() => setIsOverlayOpen(false)}
       />
     </div>
   );

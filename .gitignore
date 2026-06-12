@@ -1,6 +1,9 @@
 # .ai directory (project metadata, not committed)
 .ai/
 
+# .local directory (local-only developer files, not committed)
+.local/
+
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
