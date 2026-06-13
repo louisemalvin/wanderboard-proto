@@ -22,10 +22,10 @@ export function ErrorCard({
   onStartEmpty,
 }: ErrorCardProps) {
   return (
-    <div className="w-full rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950">
+    <div className="w-full rounded-xl border border-red-200 bg-red-50 p-4">
       <div className="flex items-start gap-3">
         {/* Icon */}
-        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400">
+        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
           <svg
             className="h-4 w-4"
             fill="none"
@@ -42,7 +42,7 @@ export function ErrorCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-red-800 dark:text-red-200">
+          <p className="text-sm font-medium text-red-800">
             {message}
           </p>
 
@@ -50,7 +50,7 @@ export function ErrorCard({
             <button
               type="button"
               onClick={onRetry}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-red-700"
             >
               <svg
                 className="h-3.5 w-3.5"
@@ -71,7 +71,7 @@ export function ErrorCard({
             <button
               type="button"
               onClick={onSampleTrip}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#DED6CC] bg-[#FFFDFC] px-3.5 py-2 text-xs font-medium text-[#1F2A22] transition-colors hover:bg-[#F7F4EF]"
             >
               <svg
                 className="h-3.5 w-3.5"
@@ -92,7 +92,7 @@ export function ErrorCard({
             <button
               type="button"
               onClick={onStartEmpty}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#DED6CC] bg-[#FFFDFC] px-3.5 py-2 text-xs font-medium text-[#1F2A22] transition-colors hover:bg-[#F7F4EF]"
             >
               <svg
                 className="h-3.5 w-3.5"

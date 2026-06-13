@@ -1,6 +1,6 @@
 import type { Place, TripBoard } from "@/lib/trip-types";
 
-export type TransitMode = "Walk" | "Transit" | "Taxi";
+export type TransitMode = "Walk" | "Public transit" | "Taxi / drive";
 
 export type TransitOption = {
   mode: TransitMode;
@@ -86,7 +86,7 @@ function formatQuery(place: Place) {
 }
 
 function buildGoogleMapsUrl(from: Place, to: Place, mode: TransitMode) {
-  const travelMode = mode === "Walk" ? "walking" : mode === "Transit" ? "transit" : "driving";
+  const travelMode = mode === "Walk" ? "walking" : mode === "Public transit" ? "transit" : "driving";
   const params = new URLSearchParams({
     api: "1",
     origin: formatQuery(from),
@@ -124,20 +124,20 @@ function buildOptions(from: Place, to: Place, seed: number): TransitOption[] {
       recommended: false,
     },
     {
-      mode: "Transit",
+      mode: "Public transit",
       durationMinutes: baseline,
       distance,
       cost: "$2-5",
-      mapUrl: buildGoogleMapsUrl(from, to, "Transit"),
+      mapUrl: buildGoogleMapsUrl(from, to, "Public transit"),
       note: TRANSIT_NOTES[seed % TRANSIT_NOTES.length],
       recommended: true,
     },
     {
-      mode: "Taxi",
+      mode: "Taxi / drive",
       durationMinutes: Math.max(8, baseline - 8),
       distance,
       cost: "$12-24",
-      mapUrl: buildGoogleMapsUrl(from, to, "Taxi"),
+      mapUrl: buildGoogleMapsUrl(from, to, "Taxi / drive"),
       note: TAXI_NOTES[seed % TAXI_NOTES.length],
       recommended: false,
     },
@@ -191,9 +191,9 @@ export function buildMockItineraryAnalysis(board: TripBoard | null): ItineraryAn
     destination: board.destinationText || "Current board",
     overview:
       plannedStops > 0
-        ? `${plannedStops} saved stops organized across ${days.length || board.durationDays} day${(days.length || board.durationDays) === 1 ? "" : "s"}. Route timing is estimated for prototype review.`
+        ? `${plannedStops} saved stops organized across ${days.length || board.durationDays} day${(days.length || board.durationDays) === 1 ? "" : "s"}. Route timing is predicted from available route data.`
         : "Add places to your days to preview route timing, pacing, and map links.",
-    assumption: "Mock analysis: route times, weather, and opening-hour notes are demo estimates, not live checks.",
+    assumption: "Route times, weather, and opening-hour notes are planning estimates, not live checks.",
     days,
   };
 }

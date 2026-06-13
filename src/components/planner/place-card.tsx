@@ -20,20 +20,20 @@ export interface PlaceCardProps {
 
 const TYPE_STYLES: Record<PlaceType, string> = {
   attraction:
-    "bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300",
-  area: "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300",
+    "bg-[#F0DAD5] text-[#6F493B]",
+  area: "bg-[#E7F1E8] text-[#2E6F40]",
   hotel:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300",
-  food: "bg-orange-100 text-orange-700 dark:bg-orange-900/60 dark:text-orange-300",
+    "bg-[#E7F1E8] text-[#2E6F40]",
+  food: "bg-orange-100 text-orange-800",
   cafe:
-    "bg-amber-800/20 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200",
+    "bg-[#F0DAD5] text-[#6F493B]",
   shopping:
-    "bg-pink-100 text-pink-700 dark:bg-pink-900/60 dark:text-pink-300",
+    "bg-[#F0DAD5] text-[#6F493B]",
   nature:
-    "bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-300",
-  ticket: "bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300",
+    "bg-[#E7F1E8] text-[#2E6F40]",
+  ticket: "bg-red-100 text-red-700",
   custom:
-    "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300",
+    "bg-[#F7F4EF] text-[#667066]",
 };
 
 // ------------------------------------------------------------------
@@ -63,28 +63,28 @@ export function PlaceCard({
       onClick={onClick}
       className={`rounded-lg border p-3 text-left transition-colors ${
         isHighlighted
-          ? "border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950/50"
-          : "border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800/80"
-      } ${onClick ? "cursor-pointer hover:shadow-sm" : ""}`}
+          ? "border-[#2E6F40]/45 bg-[#E7F1E8] ring-1 ring-[#2E6F40]/20"
+          : "border-[#DED6CC] bg-[#FFFDFC]"
+      } ${onClick ? "cursor-pointer hover:border-[#BFCDBF] hover:shadow-sm" : ""}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h4 className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <h4 className="truncate text-sm font-medium text-[#1F2A22]">
               {place.name}
             </h4>
             <span
               className={
                 `inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-medium uppercase leading-none ` +
                 (TYPE_STYLES[place.type] ??
-                  "bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400")
+                  "bg-[#F7F4EF] text-[#667066]")
               }
             >
               {place.type}
             </span>
           </div>
 
-          <p className="mt-1 truncate text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 truncate text-xs text-[#667066]">
             {place.description}
           </p>
 
@@ -93,7 +93,7 @@ export function PlaceCard({
               {place.tags.slice(0, 3).map((tag) => (
                 <span
                   key={tag}
-                  className="text-[10px] text-zinc-400 dark:text-zinc-500"
+                  className="text-[10px] text-[#667066]/75"
                 >
                   #{tag}
                 </span>

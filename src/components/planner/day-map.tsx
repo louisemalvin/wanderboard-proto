@@ -84,15 +84,15 @@ function PlaceMarker({ place, isHighlighted }: PlaceMarkerProps) {
       radius={isHighlighted ? 12 : 8}
       pathOptions={
         isHighlighted
-          ? { color: "#ef4444", fillColor: "#ef4444", fillOpacity: 0.8 }
-          : { color: "#3b82f6", fillColor: "#3b82f6", fillOpacity: 0.6 }
+          ? { color: "#c47a3d", fillColor: "#c47a3d", fillOpacity: 0.9 }
+          : { color: "#2e6f40", fillColor: "#2e6f40", fillOpacity: 0.7 }
       }
     >
       <Popup>
         <div className="text-sm">
           <strong>{place.name}</strong>
           <br />
-          <span className="text-xs text-zinc-500">{place.type}</span>
+          <span className="text-xs text-[#667066]">{place.type}</span>
         </div>
       </Popup>
     </CircleMarker>
@@ -126,7 +126,7 @@ export default function DayMap() {
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       />
 
       <MapController />

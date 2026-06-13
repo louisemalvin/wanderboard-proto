@@ -50,19 +50,19 @@ export function PromptCard({
   }
 
   return (
-    <div className="w-full rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="w-full rounded-xl border border-[#DED6CC] bg-[#FFFDFC] p-4 shadow-sm">
       <textarea
         value={prompt}
         onChange={(e) => onPromptChange(e.target.value)}
         placeholder="6 days in Tokyo, balanced pace, food + shopping + nature..."
         rows={3}
-        className="w-full resize-none rounded-lg border border-zinc-300 bg-zinc-50 p-3 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500"
+        className="w-full resize-none rounded-lg border border-[#DED6CC] bg-[#F7F4EF] p-3 text-sm text-[#1F2A22] placeholder:text-[#667066]/70 focus:border-[#2E6F40] focus:outline-none focus:ring-1 focus:ring-[#2E6F40]"
       />
 
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="mt-2 flex items-center gap-1 text-xs font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+        className="mt-2 flex items-center gap-1 text-xs font-medium text-[#667066] hover:text-[#2E6F40]"
       >
         <svg
           className={`h-3.5 w-3.5 transition-transform ${expanded ? "rotate-90" : ""}`}
@@ -80,7 +80,7 @@ export function PromptCard({
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {/* Destination */}
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <label className="text-xs font-medium text-[#667066]">
               Destination
             </label>
             <input
@@ -90,13 +90,13 @@ export function PromptCard({
                 handleDetailsField("destination", e.target.value)
               }
               placeholder="e.g. Tokyo"
-              className="rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500"
+              className="rounded-lg border border-[#DED6CC] bg-[#F7F4EF] px-3 py-2 text-sm text-[#1F2A22] placeholder:text-[#667066]/70 focus:border-[#2E6F40] focus:outline-none focus:ring-1 focus:ring-[#2E6F40]"
             />
           </div>
 
           {/* Duration */}
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <label className="text-xs font-medium text-[#667066]">
               Duration (days)
             </label>
             <input
@@ -110,13 +110,13 @@ export function PromptCard({
                   Math.max(1, parseInt(e.target.value) || 1)
                 )
               }
-              className="rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+              className="rounded-lg border border-[#DED6CC] bg-[#F7F4EF] px-3 py-2 text-sm text-[#1F2A22] focus:border-[#2E6F40] focus:outline-none focus:ring-1 focus:ring-[#2E6F40]"
             />
           </div>
 
           {/* Pace */}
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <label className="text-xs font-medium text-[#667066]">
               Pace
             </label>
             <select
@@ -124,7 +124,7 @@ export function PromptCard({
               onChange={(e) =>
                 handleDetailsField("pace", e.target.value as TripPace)
               }
-              className="rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+              className="rounded-lg border border-[#DED6CC] bg-[#F7F4EF] px-3 py-2 text-sm text-[#1F2A22] focus:border-[#2E6F40] focus:outline-none focus:ring-1 focus:ring-[#2E6F40]"
             >
               <option value="relaxed">Relaxed</option>
               <option value="balanced">Balanced</option>
@@ -134,7 +134,7 @@ export function PromptCard({
 
           {/* Budget */}
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <label className="text-xs font-medium text-[#667066]">
               Budget
             </label>
             <select
@@ -145,7 +145,7 @@ export function PromptCard({
                   e.target.value as BudgetLevel
                 )
               }
-              className="rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+              className="rounded-lg border border-[#DED6CC] bg-[#F7F4EF] px-3 py-2 text-sm text-[#1F2A22] focus:border-[#2E6F40] focus:outline-none focus:ring-1 focus:ring-[#2E6F40]"
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -155,7 +155,7 @@ export function PromptCard({
 
           {/* Interests */}
           <div className="flex flex-col gap-1 sm:col-span-2">
-            <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <label className="text-xs font-medium text-[#667066]">
               Interests
             </label>
             <input
@@ -165,7 +165,7 @@ export function PromptCard({
                 handleDetailsField("interests", e.target.value)
               }
               placeholder="food, nature, shopping, culture..."
-              className="rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500"
+              className="rounded-lg border border-[#DED6CC] bg-[#F7F4EF] px-3 py-2 text-sm text-[#1F2A22] placeholder:text-[#667066]/70 focus:border-[#2E6F40] focus:outline-none focus:ring-1 focus:ring-[#2E6F40]"
             />
           </div>
         </div>

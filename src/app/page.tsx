@@ -310,14 +310,14 @@ export default function HomePage() {
 
   // ---- Render ----
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
+    <div className="flex min-h-screen flex-col bg-[#F7F4EF] font-sans text-[#1F2A22]">
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-6 px-4 py-12 sm:py-16">
         {/* Hero */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-3xl font-bold tracking-tight text-[#1F2A22]">
             Wanderboard
           </h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-[#667066]">
             Your travel board, organized.
           </p>
         </div>

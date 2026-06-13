@@ -16,39 +16,39 @@ import { formatDuration, formatMoneyRange } from "@/lib/format";
 const TYPE_BADGES: Record<PlaceType, { label: string; style: string }> = {
   attraction: {
     label: "Attraction",
-    style: "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300",
+    style: "bg-[#F0DAD5] text-[#6F493B]",
   },
   area: {
     label: "Area",
-    style: "bg-teal-100 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300",
+    style: "bg-[#E7F1E8] text-[#2E6F40]",
   },
   hotel: {
     label: "Hotel",
-    style: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
+    style: "bg-[#E7F1E8] text-[#2E6F40]",
   },
   food: {
     label: "Food",
-    style: "bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300",
+    style: "bg-orange-100 text-orange-800",
   },
   cafe: {
     label: "Café",
-    style: "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
+    style: "bg-[#F0DAD5] text-[#6F493B]",
   },
   shopping: {
     label: "Shopping",
-    style: "bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300",
+    style: "bg-[#F0DAD5] text-[#6F493B]",
   },
   nature: {
     label: "Nature",
-    style: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
+    style: "bg-[#E7F1E8] text-[#2E6F40]",
   },
   ticket: {
     label: "Ticket",
-    style: "bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300",
+    style: "bg-rose-100 text-rose-700",
   },
   custom: {
     label: "Custom",
-    style: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+    style: "bg-[#F7F4EF] text-[#667066]",
   },
 };
 
@@ -70,7 +70,7 @@ export function ItineraryReadout() {
   if (!board) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-sm text-zinc-400">No trip loaded.</p>
+        <p className="text-sm text-[#667066]">No trip loaded.</p>
       </div>
     );
   }
@@ -117,9 +117,9 @@ export function ItineraryReadout() {
   };
 
   const PACE_STYLES: Record<string, string> = {
-    relaxed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300",
-    balanced: "bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300",
-    packed: "bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300",
+    relaxed: "bg-[#E7F1E8] text-[#2E6F40]",
+    balanced: "bg-[#F0DAD5] text-[#6F493B]",
+    packed: "bg-amber-100 text-amber-800",
   };
 
   // ---- Refresh: re-reads from store by accessing fresh state ----
@@ -134,19 +134,19 @@ export function ItineraryReadout() {
     <div className="space-y-6">
       {/* Trip header */}
       <div>
-        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+        <h2 className="text-lg font-bold text-[#1F2A22]">
           {board.title || board.destinationText || "Untitled Trip"}
         </h2>
         {board.destinationText && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-[#667066]">
             {board.destinationText}
           </p>
         )}
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+          <span className="text-xs text-[#667066]">
             {board.durationDays} {board.durationDays === 1 ? "day" : "days"}
           </span>
-          <span className="text-xs text-zinc-300 dark:text-zinc-600">·</span>
+          <span className="text-xs text-[#B6AA9F]">·</span>
           <span
             className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium uppercase leading-none ${
               PACE_STYLES[board.pace] ?? PACE_STYLES.balanced
@@ -156,8 +156,8 @@ export function ItineraryReadout() {
           </span>
           {board.budgetLevel && (
             <>
-              <span className="text-xs text-zinc-300 dark:text-zinc-600">·</span>
-              <span className="text-[10px] font-medium uppercase text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs text-[#B6AA9F]">·</span>
+              <span className="text-[10px] font-medium uppercase text-[#667066]">
                 {board.budgetLevel} budget
               </span>
             </>
@@ -167,23 +167,23 @@ export function ItineraryReadout() {
 
       {/* Day-by-day itinerary */}
       {dayStops.length === 0 && (
-        <p className="text-sm text-zinc-400 dark:text-zinc-500">
+        <p className="text-sm text-[#667066]">
           No days have been planned yet.
         </p>
       )}
 
       {dayStops.map(({ day, places }) => (
         <div key={day.id}>
-          <h3 className="mb-2 text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+          <h3 className="mb-2 text-sm font-semibold text-[#1F2A22]">
             Day {day.dayNumber}: {day.title}
           </h3>
           {day.summary && (
-            <p className="mb-2 text-xs italic text-zinc-500 dark:text-zinc-400">
+            <p className="mb-2 text-xs italic text-[#667066]">
               {day.summary}
             </p>
           )}
           {places.length === 0 ? (
-            <p className="text-xs text-zinc-400 dark:text-zinc-500">
+            <p className="text-xs text-[#667066]">
               No stops assigned yet.
             </p>
           ) : (
@@ -193,14 +193,14 @@ export function ItineraryReadout() {
                 return (
                   <li
                     key={place.id}
-                    className="rounded-lg border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/50"
+                    className="rounded-lg border border-[#DED6CC] bg-[#FFFDFC] p-3"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                        <p className="truncate text-sm font-medium text-[#1F2A22]">
                           {place.name}
                         </p>
-                        <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                        <p className="mt-0.5 text-xs text-[#667066]">
                           {place.city}, {place.country}
                         </p>
                       </div>
@@ -213,7 +213,7 @@ export function ItineraryReadout() {
                     {(place.estimatedCost || place.estimatedDurationMinutes) && (
                       <div className="mt-1.5 flex flex-wrap gap-3">
                         {place.estimatedCost && (
-                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                          <span className="text-[10px] text-[#667066]">
                             {formatMoneyRange(
                               place.estimatedCost.min,
                               place.estimatedCost.max,
@@ -222,14 +222,14 @@ export function ItineraryReadout() {
                           </span>
                         )}
                         {place.estimatedDurationMinutes && (
-                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                          <span className="text-[10px] text-[#667066]">
                             {formatDuration(place.estimatedDurationMinutes)}
                           </span>
                         )}
                       </div>
                     )}
                     {place.description && (
-                      <p className="mt-1 text-[11px] leading-relaxed text-zinc-600 dark:text-zinc-400">
+                      <p className="mt-1 text-[11px] leading-relaxed text-[#667066]">
                         {place.description}
                       </p>
                     )}
@@ -244,16 +244,16 @@ export function ItineraryReadout() {
       {/* Assumptions */}
       {board.assumptions.length > 0 && (
         <div>
-          <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+          <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-[#667066]">
             Assumptions
           </h3>
           <ul className="space-y-1">
             {board.assumptions.map((a, i) => (
               <li
                 key={i}
-                className="flex items-start gap-2 text-xs text-zinc-600 dark:text-zinc-400"
+                className="flex items-start gap-2 text-xs text-[#667066]"
               >
-                <span className="mt-0.5 h-1 w-1 shrink-0 rounded-full bg-zinc-400" />
+                <span className="mt-0.5 h-1 w-1 shrink-0 rounded-full bg-[#667066]" />
                 {a}
               </li>
             ))}
@@ -263,15 +263,15 @@ export function ItineraryReadout() {
 
       {/* Warnings */}
       {board.warnings.length > 0 && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
-          <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+          <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-amber-800">
             Warnings
           </h3>
           <ul className="space-y-1">
             {board.warnings.map((w, i) => (
               <li
                 key={i}
-                className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-400"
+                className="flex items-start gap-2 text-xs text-amber-800"
               >
                 <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-500" />
                 {w}
@@ -283,27 +283,27 @@ export function ItineraryReadout() {
 
       {/* Budget estimate total */}
       {allAssignedPlaces.length > 0 && (
-        <div className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-800">
-          <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+        <div className="rounded-lg border border-[#DED6CC] bg-[#FFFDFC] p-3">
+          <h3 className="mb-1 text-xs font-semibold uppercase tracking-wider text-[#667066]">
             Budget Estimate
           </h3>
-          <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+          <p className="text-lg font-bold text-[#1F2A22]">
             {formatMoneyRange(budgetMin, budgetMax, budgetCurrency)}
           </p>
           {totalDurationMin > 0 && (
-            <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-0.5 text-xs text-[#667066]">
               Estimated total time: {formatDuration(totalDurationMin)}
             </p>
           )}
-          <p className="mt-1 text-[10px] text-zinc-400 dark:text-zinc-500">
+          <p className="mt-1 text-[10px] text-[#667066]/80">
             Per-person estimates. Actual costs may vary.
           </p>
         </div>
       )}
 
       {/* Disclaimer */}
-      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-950">
-        <p className="text-[11px] leading-relaxed text-yellow-800 dark:text-yellow-200">
+      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+        <p className="text-[11px] leading-relaxed text-yellow-800">
           <strong>Check before you go:</strong> Hours, prices, and
           availability change. Verify details directly with each location
           before your trip. Wanderboard provides planning suggestions
@@ -315,7 +315,7 @@ export function ItineraryReadout() {
       <button
         type="button"
         onClick={handleRefresh}
-        className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+        className="w-full rounded-lg border border-[#DED6CC] bg-[#FFFDFC] px-4 py-2 text-xs font-medium text-[#667066] transition-colors hover:bg-[#F7F4EF]"
       >
         Refresh Preview
       </button>

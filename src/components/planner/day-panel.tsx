@@ -58,13 +58,13 @@ export function DayPanel() {
   if (assignedPlaces.length === 0) {
     return (
       <div className="p-4">
-        <h3 className="mb-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+        <h3 className="mb-1 text-sm font-semibold text-[#1F2A22]">
           {day.title || `Day ${day.dayNumber}`}
         </h3>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="text-xs text-[#667066]">
           {day.summary}
         </p>
-        <p className="mt-6 text-center text-sm text-zinc-400 dark:text-zinc-500">
+        <p className="mt-6 text-center text-sm text-[#667066]">
           No places assigned to this day yet. Switch to Places to find and
           assign destinations.
         </p>
@@ -80,15 +80,15 @@ export function DayPanel() {
     <div className="flex flex-col gap-3 p-4">
       {/* Day header */}
       <div>
-        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+        <h3 className="text-sm font-semibold text-[#1F2A22]">
           {day.title || `Day ${day.dayNumber}`}
         </h3>
         {day.summary && (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-[#667066]">
             {day.summary}
           </p>
         )}
-        <p className="mt-1 text-[10px] text-zinc-400 dark:text-zinc-500">
+        <p className="mt-1 text-[10px] text-[#667066]/80">
           {assignedPlaces.length}{" "}
           {assignedPlaces.length === 1 ? "place" : "places"} assigned
         </p>
@@ -113,7 +113,7 @@ export function DayPanel() {
                   type="button"
                   disabled={index === 0}
                   onClick={() => handleReorder(index, "up")}
-                  className="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-zinc-700 dark:hover:text-zinc-300"
+                  className="rounded p-1 text-[#667066] transition-colors hover:bg-[#E7F1E8] hover:text-[#2E6F40] disabled:cursor-not-allowed disabled:opacity-30"
                   aria-label="Move up"
                 >
                   <ArrowUp className="h-3.5 w-3.5" />
@@ -124,7 +124,7 @@ export function DayPanel() {
                   type="button"
                   disabled={index === assignedPlaces.length - 1}
                   onClick={() => handleReorder(index, "down")}
-                  className="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-zinc-700 dark:hover:text-zinc-300"
+                  className="rounded p-1 text-[#667066] transition-colors hover:bg-[#E7F1E8] hover:text-[#2E6F40] disabled:cursor-not-allowed disabled:opacity-30"
                   aria-label="Move down"
                 >
                   <ArrowDown className="h-3.5 w-3.5" />
@@ -134,7 +134,7 @@ export function DayPanel() {
                 <button
                   type="button"
                   onClick={() => handleUnassign(place.id)}
-                  className="rounded p-1 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400"
+                  className="rounded p-1 text-red-500 transition-colors hover:bg-red-50 hover:text-red-700"
                   aria-label="Unassign place"
                 >
                   <X className="h-3.5 w-3.5" />

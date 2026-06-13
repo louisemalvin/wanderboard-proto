@@ -297,8 +297,8 @@ export function AskPill() {
       <div className="pointer-events-auto flex flex-col items-end gap-2">
         {/* Error state */}
         {pillState === "error" && (
-          <div className="w-72 rounded-xl border border-red-200 bg-red-50 p-3 shadow-lg dark:border-red-800 dark:bg-red-950">
-            <p className="mb-2 text-xs text-red-700 dark:text-red-300">
+          <div className="w-72 rounded-xl border border-red-200 bg-red-50 p-3 shadow-lg">
+            <p className="mb-2 text-xs text-red-700">
               {errorMessage}
             </p>
             <button
@@ -317,15 +317,15 @@ export function AskPill() {
             <button
               type="button"
               disabled
-              className="flex cursor-not-allowed items-center gap-2 rounded-full bg-zinc-300 px-4 py-2 text-sm text-zinc-500 shadow dark:bg-zinc-700 dark:text-zinc-400"
+              className="flex cursor-not-allowed items-center gap-2 rounded-full bg-[#DED6CC] px-4 py-2 text-sm text-[#667066] shadow"
             >
-              <span className="h-2 w-2 rounded-full bg-zinc-400" />
+              <span className="h-2 w-2 rounded-full bg-[#667066]" />
               Ask Wanderboard
             </button>
             {/* Tooltip */}
-            <div className="absolute bottom-full right-0 mb-2 hidden whitespace-nowrap rounded-md bg-zinc-800 px-2.5 py-1.5 text-xs text-white shadow-lg group-hover:block dark:bg-zinc-700">
+            <div className="absolute bottom-full right-0 mb-2 hidden whitespace-nowrap rounded-md bg-[#1F2A22] px-2.5 py-1.5 text-xs text-white shadow-lg group-hover:block">
               AI unavailable
-              <div className="absolute right-3 top-full h-2 w-2 -translate-y-1 rotate-45 bg-zinc-800 dark:bg-zinc-700" />
+              <div className="absolute right-3 top-full h-2 w-2 -translate-y-1 rotate-45 bg-[#1F2A22]" />
             </div>
           </div>
         )}
@@ -335,9 +335,9 @@ export function AskPill() {
           <button
             type="button"
             disabled
-            className="flex cursor-wait items-center gap-2 rounded-full bg-zinc-200 px-4 py-2 text-sm text-zinc-400 shadow dark:bg-zinc-800 dark:text-zinc-500"
+            className="flex cursor-wait items-center gap-2 rounded-full bg-[#E7F1E8] px-4 py-2 text-sm text-[#667066] shadow"
           >
-            <span className="h-3 w-3 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent" />
+            <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#667066] border-t-transparent" />
             Checking…
           </button>
         )}
@@ -347,16 +347,16 @@ export function AskPill() {
           <button
             type="button"
             onClick={handleOpen}
-            className="flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-lg transition-all hover:bg-blue-700 hover:shadow-xl active:scale-95"
+              className="flex items-center gap-2 rounded-full bg-[#2E6F40] px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-[#1F2A22]/20 transition-all hover:bg-[#245A34] hover:shadow-xl active:scale-95"
           >
-            <span className="h-2 w-2 rounded-full bg-blue-300" />
+            <span className="h-2 w-2 rounded-full bg-[#DDE8DA]" />
             Ask Wanderboard
           </button>
         )}
 
         {/* Expanded state */}
         {pillState === "expanded" && (
-          <div className="flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-1.5 shadow-lg dark:border-zinc-700 dark:bg-zinc-800">
+          <div className="flex items-center gap-2 rounded-full border border-[#DED6CC] bg-[#FFFDFC] px-4 py-1.5 shadow-lg">
             <input
               ref={inputRef}
               type="text"
@@ -364,13 +364,13 @@ export function AskPill() {
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="What would you like to change?"
-              className="min-w-[200px] bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400 dark:text-zinc-200 dark:placeholder:text-zinc-500"
+              className="min-w-[200px] bg-transparent text-sm text-[#1F2A22] outline-none placeholder:text-[#667066]/70"
             />
             <button
               type="button"
               onClick={handleSubmit}
               disabled={!message.trim()}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2E6F40] text-white transition-colors hover:bg-[#245A34] disabled:cursor-not-allowed disabled:opacity-40"
               aria-label="Send"
             >
               <svg
@@ -387,9 +387,9 @@ export function AskPill() {
 
         {/* Loading state */}
         {pillState === "loading" && (
-          <div className="flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-5 py-2.5 shadow-lg dark:border-zinc-700 dark:bg-zinc-800">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-2 rounded-full border border-[#DED6CC] bg-[#FFFDFC] px-5 py-2.5 shadow-lg">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#2E6F40] border-t-transparent" />
+            <span className="text-sm text-[#667066]">
               Thinking…
             </span>
           </div>

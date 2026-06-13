@@ -24,7 +24,7 @@ export function CreateBoardButton({
       type="button"
       onClick={onCreate}
       disabled={disabled || isLoading}
-      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#2E6F40] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#245A34] disabled:cursor-not-allowed disabled:opacity-50"
     >
       {isLoading ? (
         <>

@@ -17,7 +17,7 @@ export function SampleTripCard({ onSampleTrip }: SampleTripCardProps) {
     <button
       type="button"
       onClick={onSampleTrip}
-      className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-600 transition-colors hover:border-zinc-400 hover:bg-zinc-50 hover:text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+      className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-[#BFCDBF] bg-[#FFFDFC] px-5 py-3 text-sm font-medium text-[#2E6F40] transition-colors hover:border-[#2E6F40] hover:bg-[#E7F1E8]"
     >
       <svg
         className="h-4 w-4"

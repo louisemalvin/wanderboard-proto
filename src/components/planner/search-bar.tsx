@@ -33,13 +33,13 @@ export function SearchBar({
 
   return (
     <div className="relative">
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#667066]" />
       <input
         type="text"
         value={local}
         onChange={handleChange}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-zinc-300 bg-white py-2 pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-500"
+        className="w-full rounded-lg border border-[#DED6CC] bg-[#FFFDFC] py-2 pl-9 pr-3 text-sm text-[#1F2A22] outline-none transition-colors placeholder:text-[#667066]/70 focus:border-[#2E6F40] focus:ring-1 focus:ring-[#2E6F40]"
       />
     </div>
   );

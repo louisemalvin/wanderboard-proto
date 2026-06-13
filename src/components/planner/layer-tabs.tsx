@@ -21,12 +21,12 @@ export function LayerTabs() {
   const tabClass = (isActive: boolean) =>
     `relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
       isActive
-        ? "text-blue-600 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-blue-500 dark:text-blue-400"
-        : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+        ? "text-[#2E6F40] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-[#2E6F40]"
+        : "text-[#667066] hover:text-[#1F2A22]"
     }`;
 
   return (
-    <nav className="sticky top-12 z-10 flex gap-0 overflow-x-auto border-b border-zinc-200 bg-white/95 px-2 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95">
+    <nav className="sticky top-12 z-10 flex gap-0 overflow-x-auto border-b border-[#DED6CC] bg-[#F7F4EF]/95 px-2 backdrop-blur">
       {/* Places */}
       <button
         type="button"
@@ -49,7 +49,7 @@ export function LayerTabs() {
           >
             Day {day.dayNumber}
             {count > 0 && (
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-zinc-200 px-1.5 text-[10px] font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#E7F1E8] px-1.5 text-[10px] font-bold text-[#2E6F40]">
                 {count}
               </span>
             )}

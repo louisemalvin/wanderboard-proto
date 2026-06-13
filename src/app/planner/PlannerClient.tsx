@@ -15,7 +15,8 @@ import { PlacesPanel } from "@/components/planner/places-panel";
 import { DayPanel } from "@/components/planner/day-panel";
 import { AllPanel } from "@/components/planner/all-panel";
 import { AskPill } from "@/components/ask/AskPill";
-import { ItineraryOverlay } from "@/components/ask/ItineraryOverlay";
+import { ItineraryView } from "@/components/ask/ItineraryOverlay";
+import type { PlannerMode } from "@/components/planner/planner-top-bar";
 
 // ------------------------------------------------------------------
 // Dynamic map import (SSR disabled — Leaflet needs browser APIs)
@@ -66,7 +67,7 @@ export default function PlannerClient() {
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
-  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const [mode, setMode] = useState<PlannerMode>("edit");
 
   // ---- Hydrate persisted store state ----
   useEffect(() => {
@@ -146,32 +147,35 @@ export default function PlannerClient() {
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col bg-[#F7F4EF] text-[#1F2A22]">
       <PlannerTopBar
         onTogglePanel={() => setPanelOpen((v) => !v)}
         panelOpen={panelOpen}
-        onPreviewItinerary={() => setIsOverlayOpen(true)}
+        mode={mode}
+        onModeChange={setMode}
       />
-      <LayerTabs />
-      <div className="flex flex-1 overflow-hidden">
-        <aside
-          className={`${
-            panelOpen ? "w-72" : "w-0"
-          } flex-shrink-0 overflow-y-auto border-r border-zinc-200 bg-white transition-all duration-200 dark:border-zinc-700 dark:bg-zinc-900 md:w-72`}
-        >
-          <div className={`${panelOpen ? "block" : "hidden"} md:block`}>
-            {renderPanel()}
+      {mode === "edit" ? (
+        <>
+          <LayerTabs />
+          <div className="flex flex-1 overflow-hidden">
+            <aside
+              className={`${
+                panelOpen ? "w-72" : "w-0"
+              } flex-shrink-0 overflow-y-auto border-r border-[#DED6CC] bg-[#F7F4EF] transition-all duration-200 md:w-72`}
+            >
+              <div className={`${panelOpen ? "block" : "hidden"} md:block`}>
+                {renderPanel()}
+              </div>
+            </aside>
+            <main className="relative flex-1 bg-[#DDE8DA]">
+              <DayMap />
+              <AskPill />
+            </main>
           </div>
-        </aside>
-        <main className="relative flex-1">
-          <DayMap />
-          <AskPill />
-        </main>
-      </div>
-      <ItineraryOverlay
-        isOpen={isOverlayOpen}
-        onClose={() => setIsOverlayOpen(false)}
-      />
+        </>
+      ) : (
+        <ItineraryView onSwitchToEdit={() => setMode("edit")} />
+      )}
     </div>
   );
 }
@@ -182,10 +186,10 @@ export default function PlannerClient() {
 
 function LoadingSkeleton() {
   return (
-    <div className="flex h-screen items-center justify-center bg-zinc-50 dark:bg-black">
+    <div className="flex h-screen items-center justify-center bg-[#F7F4EF]">
       <div className="text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-blue-500" />
-        <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[#DED6CC] border-t-[#2E6F40]" />
+        <p className="mt-3 text-sm text-[#667066]">
           Loading your trip…
         </p>
       </div>
@@ -195,17 +199,17 @@ function LoadingSkeleton() {
 
 function EmptyState() {
   return (
-    <div className="flex h-screen items-center justify-center bg-zinc-50 dark:bg-black">
+    <div className="flex h-screen items-center justify-center bg-[#F7F4EF]">
       <div className="max-w-sm text-center">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+        <h2 className="text-lg font-semibold text-[#1F2A22]">
           No trip selected
         </h2>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-[#667066]">
           Go back to create or select a trip.
         </p>
         <Link
           href="/"
-          className="mt-4 inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+          className="mt-4 inline-block rounded-lg bg-[#2E6F40] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#245A34]"
         >
           Back to Home
         </Link>
@@ -216,17 +220,17 @@ function EmptyState() {
 
 function ErrorState() {
   return (
-    <div className="flex h-screen items-center justify-center bg-zinc-50 dark:bg-black">
+    <div className="flex h-screen items-center justify-center bg-[#F7F4EF]">
       <div className="max-w-sm text-center">
-        <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">
+        <h2 className="text-lg font-semibold text-red-600">
           Something went wrong
         </h2>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-[#667066]">
           Could not load your trip data. It may have been deleted or corrupted.
         </p>
         <Link
           href="/"
-          className="mt-4 inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+          className="mt-4 inline-block rounded-lg bg-[#2E6F40] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#245A34]"
         >
           Back to Home
         </Link>

@@ -2,19 +2,18 @@
 name: Wanderboard
 description: Your travel board, organized.
 colors:
-  primary: "#2563eb"
-  primary-hover: "#1d4ed8"
-  selected-surface: "#eff6ff"
-  selected-border: "#60a5fa"
-  app-bg: "#fafafa"
-  surface: "#ffffff"
-  ink: "#171717"
-  muted: "#71717a"
-  border: "#e4e4e7"
-  field-border: "#d4d4d8"
-  dark-bg: "#0a0a0a"
-  dark-surface: "#18181b"
-  dark-ink: "#ededed"
+  primary: "#2E6F40"
+  primary-hover: "#245A34"
+  selected-surface: "#E7F1E8"
+  selected-border: "#BFCDBF"
+  app-bg: "#F7F4EF"
+  surface: "#FFFDFC"
+  clay-surface: "#F0DAD5"
+  ink: "#1F2A22"
+  muted: "#667066"
+  border: "#DED6CC"
+  field-border: "#DED6CC"
+  trail-amber: "#C47A3D"
   success: "#10b981"
   warning: "#f59e0b"
   error: "#ef4444"
@@ -86,38 +85,40 @@ components:
 
 Wanderboard is a restrained product interface for turning uncertain travel ideas into a usable board. The system should feel polished, simple, and elegant: closer to Figma or Notion than a travel brochure. It supports exploration without spectacle, keeping the map, planner panels, and itinerary review in a calm shared workspace.
 
-The visual system is mostly neutral, with one blue accent reserved for primary actions, active states, and selection. Surfaces are flat, readable, and task-first. The product explicitly rejects over-decorated AI/SaaS clichés, heavy gradients, default glassmorphism, travel-agency brochure aesthetics, noisy map UI, and novelty that competes with planning.
+The visual system is light, natural, and planner-first: mist backgrounds, near-white panels, forest green for decisions, and clay warmth for context. Surfaces are flat, readable, and task-first. The product explicitly rejects over-decorated AI/SaaS clichés, heavy gradients, default glassmorphism, travel-agency brochure aesthetics, noisy map UI, and novelty that competes with planning.
 
 **Key Characteristics:**
-- Restrained neutral product UI with a rare, functional blue accent.
+- Restrained light product UI with a rare, functional forest accent.
 - Dense enough for planning, never cluttered for decoration.
 - Familiar controls, clear recovery states, and readable map-adjacent panels.
 - Full-screen itinerary review when review is the primary task.
 
 ## 2. Colors
 
-The palette is a quiet neutral workspace with blue used as a functional signal, not decoration.
+The palette is a quiet field-notebook workspace with forest green used as a functional signal, not decoration.
 
 ### Primary
-- **Action Blue**: Used for primary actions, selected places, preview links, map markers, and active states. Its job is orientation and commitment.
-- **Action Blue Hover**: Used only for hover/active states on primary controls.
+- **Forest Action**: Used for primary actions, selected places, preview links, map markers, and active states. Its job is orientation and commitment.
+- **Forest Hover**: Used only for hover/active states on primary controls.
 
 ### Secondary
 - **Semantic Green / Amber / Red**: Used for saved, unsaved/warning, and failed/error states. These colors must be paired with text or icons; never rely on color alone.
 
 ### Tertiary
-- **Category Chip Colors**: Purple, gray, blue, orange, amber, pink, green, red, and slate appear in place-type badges. They should remain small, label-sized accents, not page-level palette roles.
+- **Category Chip Colors**: Forest, clay, orange, amber, red, and neutral tints appear in place-type badges. They should remain small, label-sized accents, not page-level palette roles.
 
 ### Neutral
-- **App Background**: The outer planning canvas and start page base.
-- **Surface White**: Cards, panels, fields, overlays, and top bars in light mode.
+- **Mist Background**: The outer planning canvas and start page base.
+- **Panel Surface**: Cards, panels, fields, overlays, and top bars.
+- **Clay Surface**: Secondary warmth for callouts, contextual chips, and gentle contrast.
 - **Ink**: Primary readable text.
 - **Muted Text**: Secondary descriptions and metadata; verify contrast before using on tinted backgrounds.
 - **Border / Field Border**: Structure and separation in place of heavy shadow.
-- **Dark Background / Dark Surface / Dark Ink**: Dark-mode equivalents, used with the same restraint.
 
 ### Named Rules
-**The Quiet Accent Rule.** Blue should cover less than 10% of a typical screen. If the screen starts looking blue, the accent has failed.
+**The Quiet Accent Rule.** Forest green should cover less than 10% of a typical screen. If the screen starts looking green, the accent has failed.
+
+**The Light Workspace Rule.** Wanderboard is primarily light. Do not add dark-mode branches unless there is a product requirement for them.
 
 **The Contrast Before Elegance Rule.** Muted text must remain readable at WCAG AA contrast. Light gray elegance is not allowed to make planning harder.
 
@@ -154,8 +155,8 @@ Wanderboard is flat by default. Depth is conveyed through tonal layering, border
 
 ### Buttons
 - **Shape:** Gently rounded product controls (8px radius).
-- **Primary:** Action Blue background with white text, medium weight, and compact padding.
-- **Hover / Focus:** Darken blue on hover; use visible focus rings with enough contrast.
+- **Primary:** Forest Action background with white text, medium weight, and compact padding.
+- **Hover / Focus:** Darken forest green on hover; use visible focus rings with enough contrast.
 - **Secondary / Ghost:** Text or neutral hover backgrounds for toolbar actions, back links, and preview actions.
 
 ### Chips
@@ -188,7 +189,7 @@ The itinerary preview is a full-screen dialog because review is the primary task
 
 ### Do:
 - **Do** keep the board editable and make generated content feel like a starting point.
-- **Do** use the blue accent for primary actions, selected states, and map orientation only.
+- **Do** use the forest accent for primary actions, selected states, and map orientation only.
 - **Do** use borders and tonal surfaces before adding shadows.
 - **Do** provide clear recovery actions for errors, unavailable AI, empty state, and local-storage failures.
 - **Do** keep map information available in text panels or itinerary summaries.

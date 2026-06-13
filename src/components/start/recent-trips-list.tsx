@@ -48,11 +48,11 @@ function formatRelativeTime(iso: string): string {
 
 const PACE_BADGE: Record<string, string> = {
   relaxed:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
+    "bg-[#E7F1E8] text-[#2E6F40]",
   balanced:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+    "bg-[#F0DAD5] text-[#6F493B]",
   packed:
-    "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+    "bg-red-100 text-red-700",
 };
 
 // ------------------------------------------------------------------
@@ -68,7 +68,7 @@ export function RecentTripsList({
   if (isLoading) {
     return (
       <Section>
-        <div className="flex items-center justify-center py-8 text-sm text-zinc-400 dark:text-zinc-500">
+        <div className="flex items-center justify-center py-8 text-sm text-[#667066]">
           <svg
             className="mr-2 h-4 w-4 animate-spin"
             fill="none"
@@ -97,7 +97,7 @@ export function RecentTripsList({
   if (error) {
     return (
       <Section>
-        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
+        <p className="text-xs text-red-600">{error}</p>
       </Section>
     );
   }
@@ -105,7 +105,7 @@ export function RecentTripsList({
   if (trips.length === 0) {
     return (
       <Section>
-        <p className="py-4 text-center text-sm text-zinc-400 dark:text-zinc-500">
+        <p className="py-4 text-center text-sm text-[#667066]">
           No recent trips yet.
         </p>
       </Section>
@@ -122,10 +122,10 @@ export function RecentTripsList({
             key={trip.id}
             type="button"
             onClick={() => onSelect(trip.id)}
-            className="flex w-full items-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-left transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+            className="flex w-full items-center gap-3 rounded-lg border border-[#DED6CC] bg-[#FFFDFC] px-4 py-3 text-left transition-colors hover:bg-[#E7F1E8]"
           >
             {/* Icon */}
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E7F1E8] text-[#2E6F40]">
               <svg
                 className="h-4 w-4"
                 fill="none"
@@ -143,10 +143,10 @@ export function RecentTripsList({
 
             {/* Info */}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="truncate text-sm font-medium text-[#1F2A22]">
                 {trip.title || "Untitled trip"}
               </p>
-              <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="truncate text-xs text-[#667066]">
                 {trip.destinationText
                   ? `${trip.destinationText} · ${trip.durationDays} ${trip.durationDays === 1 ? "day" : "days"} · ${trip.placeCount} ${trip.placeCount === 1 ? "place" : "places"}`
                   : `${trip.durationDays} ${trip.durationDays === 1 ? "day" : "days"} · ${trip.placeCount} ${trip.placeCount === 1 ? "place" : "places"}`}
@@ -157,12 +157,12 @@ export function RecentTripsList({
             <div className="flex shrink-0 flex-col items-end gap-1">
               <span
                 className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium uppercase leading-none ${
-                  PACE_BADGE[trip.pace] ?? "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                  PACE_BADGE[trip.pace] ?? "bg-[#F7F4EF] text-[#667066]"
                 }`}
               >
                 {trip.pace}
               </span>
-              <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+              <span className="text-[10px] text-[#667066]/80">
                 {formatRelativeTime(trip.updatedAt)}
               </span>
             </div>
@@ -180,7 +180,7 @@ export function RecentTripsList({
 function Section({ children }: { children: React.ReactNode }) {
   return (
     <section className="w-full">
-      <h2 className="mb-3 text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+      <h2 className="mb-3 text-sm font-semibold text-[#1F2A22]">
         Recent trips
       </h2>
       {children}

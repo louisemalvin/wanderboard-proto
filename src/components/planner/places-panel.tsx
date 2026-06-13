@@ -86,7 +86,7 @@ export function PlacesPanel() {
           onChange={setSearchQuery}
           placeholder="Search places..."
         />
-        <p className="mt-6 text-center text-sm text-zinc-400 dark:text-zinc-500">
+        <p className="mt-6 text-center text-sm text-[#667066]">
           No places saved yet. Search for places or ask Wanderboard to suggest
           some.
         </p>
@@ -122,7 +122,7 @@ export function PlacesPanel() {
               }
               actions={
                 assignedDays.length > 0 ? (
-                  <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                  <span className="inline-flex items-center rounded-full bg-[#E7F1E8] px-2 py-0.5 text-[10px] font-medium text-[#2E6F40]">
                     Assigned to{" "}
                     {assignedDays
                       .sort((a, b) => a - b)
@@ -139,7 +139,7 @@ export function PlacesPanel() {
                           [place.id]: e.target.value,
                         }))
                       }
-                      className="max-w-24 truncate rounded border border-zinc-300 bg-white px-1.5 py-1 text-[10px] outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200"
+                      className="max-w-24 truncate rounded border border-[#DED6CC] bg-[#FFFDFC] px-1.5 py-1 text-[10px] text-[#1F2A22] outline-none"
                       aria-label="Assign to day"
                     >
                       <option value="">Day…</option>
@@ -155,7 +155,7 @@ export function PlacesPanel() {
                       onClick={() =>
                         handleAssign(place.id, assignTarget[place.id])
                       }
-                      className="rounded bg-blue-600 px-1.5 py-1 text-[10px] font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="rounded bg-[#2E6F40] px-1.5 py-1 text-[10px] font-medium text-white transition-colors hover:bg-[#245A34] disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Assign
                     </button>
@@ -167,7 +167,7 @@ export function PlacesPanel() {
         })}
 
         {filteredPlaces.length === 0 && searchQuery.trim() && (
-          <p className="text-center text-sm text-zinc-400 dark:text-zinc-500">
+          <p className="text-center text-sm text-[#667066]">
             No places match &quot;{searchQuery}&quot;
           </p>
         )}
