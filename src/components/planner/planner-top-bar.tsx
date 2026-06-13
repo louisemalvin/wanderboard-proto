@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Menu, X, ArrowLeft } from "lucide-react";
 import { useTripStore } from "@/stores/trip-store";
 
-export type PlannerMode = "edit" | "view";
+export type PlannerMode = "edit" | "guide";
 
 export interface PlannerTopBarProps {
   onTogglePanel: () => void;
@@ -94,7 +94,7 @@ export function PlannerTopBar({ onTogglePanel, panelOpen, mode, onModeChange }: 
           className="rounded-md border border-[#DED6CC] bg-[#F7F4EF] px-2.5 py-1 text-xs font-medium text-[#1F2A22] transition-colors hover:bg-[#E7F1E8] focus:outline-none focus:ring-2 focus:ring-[#2E6F40] focus:ring-offset-2 focus:ring-offset-[#FFFDFC]"
         >
           <option value="edit">Edit mode</option>
-          <option value="view">View mode</option>
+          <option value="guide">Guide mode</option>
         </select>
         <button
           type="button"

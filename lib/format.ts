@@ -43,6 +43,43 @@ export function formatDuration(minutes: number): string {
 }
 
 /**
+ * Convert a deterministic HH:mm value to minutes after midnight.
+ * Returns null for malformed or out-of-range input.
+ */
+export function parseTimeToMinutes(time: string): number | null {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(time.trim());
+  if (!match) return null;
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+}
+
+/**
+ * Format minutes after midnight as HH:mm without using the current clock or timezone.
+ * Values wrap within a 24-hour day so shifted day-flow estimates remain deterministic.
+ */
+export function formatTimeFromMinutes(minutesAfterMidnight: number): string {
+  const minutesInDay = 24 * 60;
+  const normalized = ((Math.round(minutesAfterMidnight) % minutesInDay) + minutesInDay) % minutesInDay;
+  const hours = Math.floor(normalized / 60);
+  const minutes = normalized % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+/**
+ * Format an approximate itinerary marker. The leading ~ is intentional: these are
+ * planning estimates, not appointments or live route-provider timestamps.
+ */
+export function formatApproximateTime(minutesAfterMidnight: number): string {
+  return `~${formatTimeFromMinutes(minutesAfterMidnight)}`;
+}
+
+/**
  * Format a city and country into a location string.
  * Example: ("Tokyo", "Japan") => "Tokyo, Japan"
  */

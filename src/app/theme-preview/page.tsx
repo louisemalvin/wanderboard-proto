@@ -98,7 +98,7 @@ export default function ThemePreviewPage() {
               </div>
               <div className="flex items-center gap-2">
                 <button className="rounded-md px-2.5 py-1 text-xs font-medium text-[#DDE8DA] hover:bg-white/10">
-                  View mode
+                  Guide mode
                 </button>
                 <button className="rounded-md bg-[#2E6F40] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#245A34]">
                   Share

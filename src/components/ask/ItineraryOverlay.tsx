@@ -1,26 +1,31 @@
 "use client";
 
 // ------------------------------------------------------------------
-// Inline read-only itinerary view for Planner View mode.
+// Inline itinerary companion view for Planner Guide Mode.
 // ------------------------------------------------------------------
 
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import {
   AlertTriangle,
-  CloudSun,
   Clock,
   ExternalLink,
+  MessageCircle,
   MapPinned,
-  Navigation,
 } from "lucide-react";
 import {
   buildMockItineraryAnalysis,
+  buildEstimatedDayFlow,
   type ItineraryAnalysisDay,
-  type ItineraryAnalysisLeg,
+  type EstimatedDayFlowStopItem,
+  type EstimatedDayFlowMovementItem,
 } from "@/data/mock-itinerary-analysis";
 import { useTripStore } from "@/stores/trip-store";
-import { formatDuration, formatMoneyRange } from "@/lib/format";
+import {
+  formatMoneyRange,
+  formatTimeFromMinutes,
+  parseTimeToMinutes,
+} from "@/lib/format";
 
 export interface ItineraryViewProps {
   onSwitchToEdit: () => void;
@@ -45,7 +50,7 @@ export function ItineraryView({ onSwitchToEdit }: ItineraryViewProps) {
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-medium text-[#2E6F40]">
-                View mode
+                Guide mode
               </p>
               <h1 className="mt-1 text-xl font-semibold text-[#1F2A22]">
                 {analysis.title}
@@ -58,7 +63,7 @@ export function ItineraryView({ onSwitchToEdit }: ItineraryViewProps) {
               </p>
             </div>
             <div className="rounded-full bg-[#E7F1E8] px-3 py-1 text-xs font-medium text-[#2E6F40]">
-              Read-only itinerary
+              Based on your current plan
             </div>
           </div>
 
@@ -103,7 +108,7 @@ export function ItineraryView({ onSwitchToEdit }: ItineraryViewProps) {
             {selectedDay.stops.length === 0 ? (
               <EmptyItineraryView onSwitchToEdit={onSwitchToEdit} />
             ) : (
-              <SelectedDayView day={selectedDay} />
+              <SelectedDayView key={selectedDay.id} day={selectedDay} />
             )}
           </>
         )}
@@ -113,69 +118,341 @@ export function ItineraryView({ onSwitchToEdit }: ItineraryViewProps) {
 }
 
 function SelectedDayView({ day }: { day: ItineraryAnalysisDay }) {
-  const recommendedTravelMinutes = day.legs.reduce((total, leg) => {
-    const option = getRecommendedTransitOption(leg);
-    return total + option.durationMinutes;
-  }, 0);
+  const [dayStartTime, setDayStartTime] = useState(() =>
+    formatTimeFromMinutes(day.estimatedFlow.dayStartMinutes),
+  );
+
+  const estimatedFlow = useMemo(
+    () => buildEstimatedDayFlow(day.stops, day.legs, dayStartTime),
+    [day.stops, day.legs, dayStartTime],
+  );
+
+  const hasFoodStops = estimatedFlow.items.some(
+    (item) => item.kind === "stop" && item.isFoodRelated,
+  );
+
+  const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (parseTimeToMinutes(value) !== null) {
+      setDayStartTime(value);
+    }
+  };
+
+  const estimatedTravelMinutes = estimatedFlow.items
+    .filter((item) => item.kind === "movement")
+    .reduce((sum, item) => sum + (item as EstimatedDayFlowMovementItem).durationMinutes, 0);
+
+  const stopCount = estimatedFlow.items.filter((item) => item.kind === "stop").length;
+
+  // Compute food-anchor time: after the last stop's estimated duration
+  const lastStopItem = [...estimatedFlow.items].reverse().find(
+    (item) => item.kind === "stop",
+  ) as EstimatedDayFlowStopItem | undefined;
+  const anchorStartMinutes = lastStopItem
+    ? lastStopItem.startMinutes + lastStopItem.durationMinutes
+    : 0;
 
   return (
     <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="wb-revamp-v2">
-        <aside className="wb-r2-index-panel">
-          <p className="wb-r2-label">Route index</p>
-          <h2 className="wb-r2-title">{day.title}</h2>
-          <p className="wb-r2-summary">{day.summary}</p>
-          <div className="wb-r2-links" aria-label="Stops in this day">
-            {day.stops.map((place, index) => (
-              <div className="wb-r2-link" key={place.id}>
-                <span className="wb-r2-dot" />
-                <span>{index + 1}. {place.name}</span>
-              </div>
-            ))}
+      {/* Main column — estimated day flow */}
+      <div className="flex flex-col gap-5">
+        {/* Day start control */}
+        <div className="rounded-2xl border border-[#DED6CC] bg-[#FFFDFC] p-5 shadow-sm">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="guide-day-start-time"
+                className="text-sm font-semibold text-[#1F2A22]"
+              >
+                Day start
+              </label>
+              <input
+                id="guide-day-start-time"
+                type="time"
+                value={dayStartTime}
+                onChange={handleStartTimeChange}
+                className="rounded-lg border border-[#DED6CC] bg-[#F7F4EF] px-3 py-1.5 text-sm font-medium text-[#1F2A22] focus:outline-none focus:ring-2 focus:ring-[#2E6F40] focus:ring-offset-2 focus:ring-offset-[#FFFDFC]"
+              />
+            </div>
+            <p className="text-xs leading-5 text-[#667066]">
+              Shifting the start time updates all stop times below — no need to set
+              each one individually.
+            </p>
           </div>
-        </aside>
-        <div className="wb-r2-content" aria-label={`${day.title} timeline`}>
-          {day.stops.map((place, index) => (
-            <div key={place.id}>
-              <article className="wb-r2-place">
-                <div className="wb-r2-row">
-                  <div className="min-w-0">
-                    <h3 className="wb-r2-name">{place.name}</h3>
-                    <p className="wb-r2-meta">{[place.type, place.area || place.city, place.country].filter(Boolean).join(" · ")}</p>
-                  </div>
-                  <div className="wb-r2-pills">
-                    {place.estimatedDurationMinutes && <span className="wb-r2-pill">{formatDuration(place.estimatedDurationMinutes)} visit</span>}
-                    {place.estimatedCost && <span className="wb-r2-pill">{formatMoneyRange(place.estimatedCost.min, place.estimatedCost.max, place.estimatedCost.currency)}</span>}
-                  </div>
+        </div>
+
+        {/* Estimated day flow section */}
+        <section className="rounded-2xl border border-[#DED6CC] bg-[#FFFDFC] p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-[#1F2A22]">
+                Estimated day flow
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-[#667066]">
+                Approximate timing based on your current plan. Confirm details
+                before you go.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-[#E7F1E8] px-2.5 py-0.5 text-[11px] font-medium text-[#2E6F40]">
+              {stopCount} {stopCount === 1 ? "stop" : "stops"}
+            </span>
+          </div>
+
+          {estimatedFlow.items.length === 0 ? (
+            <p className="py-4 text-center text-sm text-[#667066]">
+              No stops assigned to this day yet — switch to Edit mode to add
+              places.
+            </p>
+          ) : (
+            <div className="rail-flow">
+              {estimatedFlow.items.map((item) => {
+                if (item.kind === "stop") {
+                  return (
+                    <StopRailRow
+                      key={item.id}
+                      stop={item}
+                    />
+                  );
+                }
+                return (
+                  <TransitRailRow
+                    key={item.id}
+                    movement={item}
+                  />
+                );
+              })}
+
+              {/* End-of-day terminal marker */}
+              <div className="rail-end-row" aria-hidden="true">
+                <div />
+                <div className="rail-track">
+                  <div className="rail-line" />
                 </div>
-                {place.description && <p className="wb-r2-copy">{place.description}</p>}
-              </article>
-              {day.legs[index] && (
-                <div className="wb-r2-travel">
-                  <TransitBlock leg={day.legs[index]} />
+                <div className="rail-end-label">
+                  <span className="text-[11px] leading-tight text-[#667066]">
+                    End of day
+                  </span>
                 </div>
+              </div>
+
+              {/* Optional food / break anchor */}
+              {!hasFoodStops && (
+                <FoodAnchorRailRow startMinutes={anchorStartMinutes} />
               )}
             </div>
-          ))}
-        </div>
+          )}
+
+          {/* Text hint when no food stops AND flow is empty (no anchor row rendered) */}
+          {!hasFoodStops && estimatedFlow.items.length === 0 && (
+            <div className="mt-5 rounded-xl border border-dashed border-[#BFCDBF] bg-[#F7F4EF] p-3 text-xs leading-5 text-[#667066]">
+              No food or break stops on this day — entirely optional. You can add
+              one in Edit mode if that helps round out the day.
+            </div>
+          )}
+        </section>
       </div>
 
+      {/* Sidebar */}
       <aside className="rounded-2xl border border-[#DED6CC] bg-[#FFFDFC] p-5 shadow-sm lg:sticky lg:top-16 lg:self-start">
-        <h2 className="text-sm font-semibold text-[#1F2A22]">
-          Day summary
-        </h2>
+        <h2 className="text-sm font-semibold text-[#1F2A22]">Day guide</h2>
         <div className="mt-3 grid grid-cols-3 gap-2 text-center lg:grid-cols-1 lg:text-left">
-          <Metric label="Stops" value={String(day.stopCount)} />
-          <Metric label="Travel" value={formatMinutes(recommendedTravelMinutes)} />
+          <Metric label="Stops" value={String(stopCount)} />
+          <Metric
+            label="Travel"
+            value={formatMinutes(estimatedTravelMinutes)}
+          />
           <Metric label="Pace" value={day.pacing} />
         </div>
         <div className="mt-4 space-y-3">
-          <Insight icon={<CloudSun className="h-4 w-4" />} label="Weather" value={day.weatherNote} />
-          <Insight icon={<Clock className="h-4 w-4" />} label="Hours" value={day.openingHoursNote} />
-          <Insight icon={<MapPinned className="h-4 w-4" />} label="Route" value="Predicted from available route data" />
+          <Insight
+            icon={<Clock className="h-4 w-4" />}
+            label="Worth checking"
+            value={day.openingHoursNote}
+          />
+          <Insight
+            icon={<MapPinned className="h-4 w-4" />}
+            label="Day shape"
+            value={day.weatherNote}
+          />
         </div>
+        <div className="mt-4 border-t border-[#DED6CC] pt-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-[#667066]">
+            Practical notes for this day
+          </h3>
+          <ul className="mt-3 space-y-2">
+            {day.guideNotes.map((note) => (
+              <li
+                key={note}
+                className="rounded-xl border border-[#DED6CC] bg-[#F7F4EF] p-3 text-xs leading-5 text-[#1F2A22]"
+              >
+                {note}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <GuideAssistantPanel />
       </aside>
     </section>
+  );
+}
+
+// ------------------------------------------------------------------
+// Rail row sub-components
+// ------------------------------------------------------------------
+
+function StopRailRow({
+  stop,
+}: {
+  stop: EstimatedDayFlowStopItem;
+}) {
+  const place = stop.place;
+  const timeLabel = formatTimeFromMinutes(stop.startMinutes);
+
+  return (
+    <div className="rail-row">
+      {/* Time column */}
+      <div className="rail-time-cell">
+        <span className="rail-time-label">{timeLabel}</span>
+      </div>
+
+      {/* Rail column */}
+      <div className="rail-track">
+        <div className="rail-line" />
+        <div className="rail-dot rail-dot-filled" />
+        <div className="rail-line" />
+      </div>
+
+      {/* Content column */}
+      <div className="rail-content">
+        <div className="rounded-xl border border-[#DED6CC] bg-[#F7F4EF] p-3">
+          <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            <span className="text-xs font-medium text-[#667066]">
+              {stop.order}.
+            </span>
+            <h3 className="text-sm font-semibold text-[#1F2A22]">
+              {place.name}
+            </h3>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-[#667066]">
+            <span>
+              {[place.type, place.area || place.city]
+                .filter(Boolean)
+                .join(" · ")}
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>{stop.durationLabel}</span>
+            {place.estimatedCost && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>
+                  {formatMoneyRange(
+                    place.estimatedCost.min,
+                    place.estimatedCost.max,
+                    place.estimatedCost.currency,
+                  )}
+                </span>
+              </>
+            )}
+            {stop.isFoodRelated && (
+              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800">
+                Food
+              </span>
+            )}
+          </div>
+
+          {place.description && (
+            <p className="mt-1.5 text-xs leading-5 text-[#1F2A22] line-clamp-2">
+              {place.description}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TransitRailRow({
+  movement,
+}: {
+  movement: EstimatedDayFlowMovementItem;
+}) {
+  const timeLabel = formatTimeFromMinutes(movement.startMinutes);
+
+  return (
+    <div className="rail-row rail-row-transit">
+      {/* Time column */}
+      <div className="rail-time-cell">
+        <span className="rail-time-label rail-time-label-transit">
+          {timeLabel}
+        </span>
+      </div>
+
+      {/* Rail column */}
+      <div className="rail-track">
+        <div className="rail-line" />
+        <div className="rail-dot rail-dot-open" />
+        <div className="rail-line" />
+      </div>
+
+      {/* Content column */}
+      <div className="rail-content rail-content-transit">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-[#667066]">
+          <span className="font-medium text-[#1F2A22]">
+            {movement.durationLabel}
+          </span>
+          <span>{movement.recommendedOption.mode}</span>
+          {movement.recommendedOption.mapUrl && (
+            <a
+              href={movement.recommendedOption.mapUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="ml-auto shrink-0 rounded-full border border-[#DED6CC] bg-[#F7F4EF] px-2 py-0.5 text-[11px] font-medium text-[#2E6F40] transition-colors hover:bg-[#E7F1E8] focus:outline-none focus:ring-2 focus:ring-[#2E6F40] focus:ring-offset-1"
+            >
+              Route
+              <ExternalLink className="ml-1 inline h-2.5 w-2.5" />
+            </a>
+          )}
+        </div>
+        <p className="mt-0.5 text-[11px] leading-4 text-[#667066]">
+          {movement.routeCheckReminder}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function FoodAnchorRailRow({
+  startMinutes,
+}: {
+  startMinutes: number;
+}) {
+  const timeLabel = formatTimeFromMinutes(startMinutes);
+
+  return (
+    <div className="rail-row rail-row-anchor">
+      {/* Time column */}
+      <div className="rail-time-cell">
+        <span className="rail-time-label rail-time-label-anchor">
+          {timeLabel}
+        </span>
+      </div>
+
+      {/* Rail column */}
+      <div className="rail-track">
+        <div className="rail-line" />
+        <div className="rail-dot rail-dot-anchor" />
+        <div className="rail-line" />
+      </div>
+
+      {/* Content column */}
+      <div className="rail-content rail-content-anchor">
+        <p className="rounded-lg border border-dashed border-[#BFCDBF] bg-[#F7F4EF] px-3 py-2 text-xs leading-5 text-[#667066]">
+          Optional: add a food or break stop in Edit mode if that helps round
+          out the day.
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -198,72 +475,36 @@ function EmptyItineraryView({ onSwitchToEdit }: ItineraryViewProps) {
   );
 }
 
-function TransitBlock({ leg }: { leg: ItineraryAnalysisLeg }) {
-  const recommendedOption = getRecommendedTransitOption(leg);
+function GuideAssistantPanel() {
+  const prompts = [
+    "What should I check before leaving?",
+    "How should I use this day if plans change?",
+    "What is the easiest next step?",
+  ];
 
   return (
-    <div className="relative pl-9">
-      <div className="absolute left-2 top-0 flex h-full flex-col items-center">
-        <span className="mt-2 h-3 w-3 rounded-full border border-[#2E6F40]/40 bg-[#E7F1E8]" />
-        <span className="mt-1 w-px flex-1 bg-[#DED6CC]" />
-      </div>
-      <article className="mb-3 rounded-xl border border-[#BFCDBF] bg-[#E7F1E8] p-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2E6F40]">
-              Travel
-            </p>
-            <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-[#1F2A22]">
-              <span className="truncate">{leg.from}</span>
-              <Navigation className="h-3.5 w-3.5 shrink-0 text-[#2E6F40]" />
-              <span className="truncate">{leg.to}</span>
-            </div>
-            <p className="mt-1 text-xs text-[#1F2A22]">
-              Predicted from available route data
-            </p>
-          </div>
-          <a
-            href={recommendedOption.mapUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex w-fit items-center gap-1 rounded-full border border-[#BFCDBF] bg-[#FFFDFC] px-2.5 py-1 text-xs font-medium text-[#2E6F40] transition-colors hover:bg-[#F7F4EF] focus:outline-none focus:ring-2 focus:ring-[#2E6F40] focus:ring-offset-2 focus:ring-offset-[#E7F1E8]"
-          >
-            Google Maps
-            <ExternalLink className="h-3 w-3" />
-          </a>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          {leg.options.map((option) => {
-            const isRecommended = option.mode === recommendedOption.mode;
-            return (
-              <span
-                key={option.mode}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-                  isRecommended
-                    ? "bg-[#2E6F40] text-white shadow-sm"
-                    : "bg-[#FFFDFC] text-[#2E6F40]"
-                }`}
-              >
-                {option.mode} {option.durationMinutes}m
-              </span>
-            );
-          })}
-        </div>
-
-        <div className="mt-3 grid gap-2 sm:grid-cols-[auto_auto_1fr] sm:items-center">
-          <span className="rounded-full bg-[#FFFDFC] px-2.5 py-1 text-xs font-medium text-[#1F2A22]">
-            {recommendedOption.distance}
-          </span>
-          <span className="rounded-full bg-[#FFFDFC] px-2.5 py-1 text-xs font-medium text-[#1F2A22]">
-            {recommendedOption.cost}
-          </span>
-          <p className="text-xs leading-5 text-[#1F2A22]">
-            {recommendedOption.note}
+    <section className="mt-4 rounded-xl border border-[#BFCDBF] bg-[#E7F1E8] p-4" aria-label="Ask Wanderboard in Guide Mode">
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 rounded-full bg-[#FFFDFC] p-1.5 text-[#2E6F40]">
+          <MessageCircle className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-[#1F2A22]">
+            Ask Wanderboard
+          </h3>
+          <p className="mt-1 text-xs leading-5 text-[#1F2A22]">
+            Guide Mode is for understanding and following this plan. Use Edit mode when you want Wanderboard to change the board.
           </p>
         </div>
-      </article>
-    </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {prompts.map((prompt) => (
+          <span key={prompt} className="rounded-full border border-[#BFCDBF] bg-[#FFFDFC] px-3 py-1.5 text-xs font-medium text-[#2E6F40]">
+            {prompt}
+          </span>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -290,10 +531,6 @@ function Insight({ icon, label, value }: { icon: ReactNode; label: string; value
       </p>
     </div>
   );
-}
-
-function getRecommendedTransitOption(leg: ItineraryAnalysisLeg) {
-  return leg.options.find((option) => option.recommended) ?? leg.options[0];
 }
 
 function formatMinutes(minutes: number) {

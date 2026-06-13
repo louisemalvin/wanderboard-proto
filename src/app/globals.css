@@ -156,3 +156,127 @@ body {
   font-size: 12px;
   font-weight: 500;
 }
+
+/* ------------------------------------------------------------------ */
+/* Rail flow — three-column estimated day flow                        */
+/* ------------------------------------------------------------------ */
+
+.rail-flow {
+  display: flex;
+  flex-direction: column;
+}
+
+.rail-row {
+  display: grid;
+  grid-template-columns: 52px 24px 1fr;
+  gap: 6px;
+  align-items: stretch;
+  min-height: 0;
+}
+
+/* Time column */
+
+.rail-time-cell {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-top: 3px;
+}
+
+.rail-time-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #667066;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.rail-time-label-transit {
+  font-weight: 400;
+  color: #667066;
+}
+
+.rail-time-label-anchor {
+  font-weight: 400;
+  color: #667066;
+}
+
+/* Rail track column (dot + vertical line segments) */
+
+.rail-track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rail-line {
+  width: 2px;
+  flex: 1;
+  min-height: 2px;
+  background: #ded6cc;
+}
+
+/* Dots */
+
+.rail-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rail-dot-filled {
+  background: #2e6f40;
+}
+
+.rail-dot-open {
+  background: #fffdfc;
+  border: 2px solid #2e6f40;
+}
+
+.rail-dot-anchor {
+  background: #fffdfc;
+  border: 2px dashed #bfcdbf;
+}
+
+/* Content column */
+
+.rail-content {
+  min-width: 0;
+  padding-top: 1px;
+  padding-bottom: 10px;
+}
+
+.rail-content-transit {
+  padding-top: 2px;
+  padding-bottom: 6px;
+}
+
+.rail-content-anchor {
+  padding-top: 2px;
+  padding-bottom: 6px;
+}
+
+/* Transit row visual subordination */
+
+.rail-row-transit .rail-time-label {
+  font-size: 11px;
+  font-weight: 400;
+}
+
+/* End-of-day terminal marker */
+
+.rail-end-row {
+  display: grid;
+  grid-template-columns: 52px 24px 1fr;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.rail-end-label {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 2px;
+  padding-bottom: 8px;
+}
