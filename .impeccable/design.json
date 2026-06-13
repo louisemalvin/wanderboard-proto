@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-12T00:00:00.000Z",
+  "title": "Design System: Wanderboard",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Action Blue", "canonical": "#2563eb", "tonalRamp": ["#1e3a8a", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe", "#eff6ff"] },
+      "app-bg": { "role": "neutral", "displayName": "App Background", "canonical": "#fafafa", "tonalRamp": ["#18181b", "#3f3f46", "#71717a", "#a1a1aa", "#d4d4d8", "#e4e4e7", "#f4f4f5", "#fafafa"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#171717", "tonalRamp": ["#0a0a0a", "#171717", "#27272a", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#ededed"] },
+      "success": { "role": "semantic", "displayName": "Saved Green", "canonical": "#10b981", "tonalRamp": ["#064e3b", "#047857", "#10b981", "#34d399", "#6ee7b7", "#a7f3d0", "#d1fae5", "#ecfdf5"] },
+      "warning": { "role": "semantic", "displayName": "Unsaved Amber", "canonical": "#f59e0b", "tonalRamp": ["#78350f", "#b45309", "#f59e0b", "#fbbf24", "#fcd34d", "#fde68a", "#fef3c7", "#fffbeb"] },
+      "error": { "role": "semantic", "displayName": "Failure Red", "canonical": "#ef4444", "tonalRamp": ["#7f1d1d", "#b91c1c", "#ef4444", "#f87171", "#fca5a5", "#fecaca", "#fee2e2", "#fef2f2"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Product name and rare large empty-state headings." },
+      "headline": { "displayName": "Headline", "purpose": "Dialog titles and major section headers." },
+      "title": { "displayName": "Title", "purpose": "Cards, place names, panels, and toolbar labels." },
+      "body": { "displayName": "Body", "purpose": "Readable planning content and descriptions." },
+      "label": { "displayName": "Label", "purpose": "Fields, badges, metadata, tabs, and status text." }
+    },
+    "shadows": [
+      { "name": "surface-lift", "value": "0 1px 2px rgba(0, 0, 0, 0.05)", "purpose": "Small separation for cards or hoverable place items." },
+      { "name": "overlay-backdrop", "value": "rgba(0, 0, 0, 0.30)", "purpose": "Backdrop behind the full-screen itinerary preview." }
+    ],
+    "motion": [
+      { "name": "state-fast", "value": "150ms ease-out", "purpose": "Hover and focus state transitions." },
+      { "name": "panel-standard", "value": "200ms ease-out", "purpose": "Panel open/close and compact UI state changes." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action button for creating boards and committed actions.",
+      "html": "<button class=\"ds-btn-primary\">Create board</button>",
+      "css": ".ds-btn-primary{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:8px 16px;font:500 14px/1.4 Geist,system-ui,sans-serif;transition:background-color 150ms ease-out,box-shadow 150ms ease-out}.ds-btn-primary:hover{background:#1d4ed8}.ds-btn-primary:focus-visible{outline:2px solid #2563eb;outline-offset:2px}@media (prefers-reduced-motion:reduce){.ds-btn-primary{transition:none}}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Default field and textarea treatment for prompts and optional details.",
+      "html": "<input class=\"ds-input\" placeholder=\"Destination\" />",
+      "css": ".ds-input{width:100%;background:#fafafa;color:#171717;border:1px solid #d4d4d8;border-radius:8px;padding:8px 12px;font:400 14px/1.5 Geist,system-ui,sans-serif}.ds-input::placeholder{color:#71717a}.ds-input:focus{border-color:#71717a;outline:2px solid rgba(113,113,122,.28);outline-offset:0}"
+    },
+    {
+      "name": "Planner Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Flat bordered container for prompt cards, place cards, and compact planning content.",
+      "html": "<article class=\"ds-card\"><h3>Place name</h3><p>Short practical note for the trip board.</p></article>",
+      "css": ".ds-card{background:#fff;color:#171717;border:1px solid #e4e4e7;border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.05);font-family:Geist,system-ui,sans-serif}.ds-card h3{margin:0 0 4px;font-size:14px;line-height:1.4;font-weight:500}.ds-card p{margin:0;color:#71717a;font-size:12px;line-height:1.5}"
+    },
+    {
+      "name": "Category Chip",
+      "kind": "chip",
+      "refersTo": "chip-category",
+      "description": "Small place-type label with tinted background and readable text.",
+      "html": "<span class=\"ds-chip\">food</span>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;border-radius:9999px;background:#ffedd5;color:#c2410c;padding:2px 8px;font:500 10px/1 Geist,system-ui,sans-serif;text-transform:uppercase}"
+    },
+    {
+      "name": "Planner Top Bar",
+      "kind": "nav",
+      "refersTo": "planner-top-bar",
+      "description": "Compact sticky navigation layer for board context and itinerary preview.",
+      "html": "<header class=\"ds-topbar\"><span>Back</span><strong>Tokyo</strong><button>Preview Itinerary</button></header>",
+      "css": ".ds-topbar{height:48px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(255,255,255,.95);border-bottom:1px solid #e4e4e7;padding:0 12px;font-family:Geist,system-ui,sans-serif}.ds-topbar span{color:#71717a;font-size:14px}.ds-topbar strong{color:#27272a;font-size:14px;font-weight:500}.ds-topbar button{background:transparent;border:0;border-radius:6px;color:#2563eb;padding:4px 10px;font-size:12px;font-weight:500}.ds-topbar button:hover{background:#eff6ff}"
+    },
+    {
+      "name": "Ask Wanderboard Pill",
+      "kind": "custom",
+      "refersTo": "ask-pill",
+      "description": "Signature AI command surface; compact at rest, focused when expanded, explicit when unavailable.",
+      "html": "<button class=\"ds-ask-pill\">Ask Wanderboard</button>",
+      "css": ".ds-ask-pill{border:1px solid #e4e4e7;background:#fff;color:#171717;border-radius:9999px;padding:10px 16px;box-shadow:0 1px 2px rgba(0,0,0,.05);font:500 14px/1.4 Geist,system-ui,sans-serif;transition:box-shadow 150ms ease-out,border-color 150ms ease-out}.ds-ask-pill:hover{border-color:#bfdbfe;box-shadow:0 4px 12px rgba(37,99,235,.12)}.ds-ask-pill:focus-visible{outline:2px solid #2563eb;outline-offset:2px}@media (prefers-reduced-motion:reduce){.ds-ask-pill{transition:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Planning Desk",
+    "overview": "Wanderboard is a restrained product interface for turning uncertain travel ideas into a usable board. The system should feel polished, simple, and elegant: closer to Figma or Notion than a travel brochure.",
+    "keyCharacteristics": ["Restrained neutral product UI with a rare, functional blue accent.", "Dense enough for planning, never cluttered for decoration.", "Familiar controls, clear recovery states, and readable map-adjacent panels.", "Full-screen itinerary review when review is the primary task."],
+    "rules": [
+      { "name": "The Quiet Accent Rule", "body": "Blue should cover less than 10% of a typical screen. If the screen starts looking blue, the accent has failed.", "section": "colors" },
+      { "name": "The Contrast Before Elegance Rule", "body": "Muted text must remain readable at WCAG AA contrast. Light gray elegance is not allowed to make planning harder.", "section": "colors" },
+      { "name": "The Product Scale Rule", "body": "Do not use fluid display typography in planner UI. Fixed, predictable type sizes keep panels and controls stable.", "section": "typography" },
+      { "name": "The Flat-by-Default Rule", "body": "Surfaces rest on borders and tonal layers. Shadows appear only for cards, hover feedback, or overlays.", "section": "elevation" }
+    ],
+    "dos": ["Do keep the board editable and make generated content feel like a starting point.", "Do use the blue accent for primary actions, selected states, and map orientation only.", "Do use borders and tonal surfaces before adding shadows.", "Do provide clear recovery actions for errors, unavailable AI, empty state, and local-storage failures.", "Do keep map information available in text panels or itinerary summaries."],
+    "donts": ["Don't use over-decorated AI/SaaS clichés.", "Don't use heavy gradients, gradient text, or default glassmorphism.", "Don't make the product look like a travel-agency brochure, destination content site, static itinerary generator, or decorative demo.", "Don't let noisy map UI compete with planner controls.", "Don't hardcode a destination-first identity; the interface must adapt to the trip the user describes.", "Don't use arbitrary z-index values in new work; define semantic layers for sticky bars, overlays, dialogs, toasts, and tooltips."]
+  }
+}
