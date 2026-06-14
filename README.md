@@ -2,283 +2,425 @@
 
 **Your AI travel board and on-the-go local guide.**
 
-![Wanderboard hero](./hero_image.png)
+![Wanderboard hero](./hero.png)
 
-## Image References
+Wanderboard is an AI-powered travel planning web app that turns scattered ideas, saved places, notes, and preferences into a structured travel board that remains editable as the trip evolves.
 
-- Guide page Sensoji Temple image: [Google Share](https://share.google/6hY3KnMKZmkhKE9IR) · Fallback: Unsplash photo `1542051841857-5f90071e7989`
-
-Wanderboard is an AI-powered travel planning web app built around two connected experiences: a planning board before the trip, and a local guide during the trip. It turns scattered ideas, saved places, notes, and preferences into a structured travel board that stays editable as the trip evolves.
-
-The goal is not to generate a rigid one-shot itinerary. Wanderboard treats trip planning as a creative process. AI helps organize the mess, but the traveler remains in control of the board, the map, the itinerary, and the decisions.
+Unlike a one-shot itinerary generator, Wanderboard treats travel planning as an ongoing creative process. Mori, Wanderboard's AI travel companion, helps organise ideas, retrieve relevant destination knowledge, and propose practical changes while the traveller remains in control of the final plan.
 
 ---
 
-## What It Does
+## From Inspiration to a Usable Trip
 
-Wanderboard helps travelers move from early inspiration to a plan they can actually use.
+![Describe the trip you want and plan it with Mori](./2.png)
 
-- Start with a natural-language trip idea.
-- Generate a structured travel board with places, days, cost ranges, notes, assumptions, and warnings.
-- Save destinations, activities, food stops, nature spots, and custom ideas.
-- Organize places by day, theme, location, or pace.
-- Explore the trip visually on a map.
-- Preview the board as an itinerary.
-- Use the guide mode during the trip to understand what is next, what is nearby, and how the day can adapt.
+### Plan with Mori
 
-Wanderboard is designed for weekend getaways, family vacations, food tours, outdoor escapes, and longer dream trips where inspiration starts messy and the final plan needs to stay flexible.
+Start with a natural-language description of the trip. Mori uses the traveller's destination, duration, interests, budget, pace, and constraints to generate a structured starting point.
 
----
+![Discover, save, and organise places](./3.png)
 
-## Two Core Experiences
+### Discover and Organise
 
-### 1. Planning Board
+Explore places visually, save promising ideas, and arrange them into practical daily plans. Places remain editable and can be moved, reordered, assigned, or removed as the trip develops.
 
-Planning mode is for the time before the trip. The user can describe what they want, collect ideas, save places, assign items to days, reorder plans, review practical notes, and shape the trip into an itinerary.
+![Use Guide Mode while travelling](./4.png)
 
-The planning board is map-first and editable. AI provides structure, suggestions, and refinements, but the board remains a living workspace rather than a static generated document.
+### Travel with Context
 
-### 2. On-the-Go Local Guide
-
-Guide mode is for the time during the trip. It turns the plan into a practical local companion for the current day, showing what is planned, what is next, and what guidance may help the traveler stay in flow.
-
-The guide experience is meant to answer questions like:
-
-- What should I do next?
-- What is close to me?
-- What still fits today?
-- What should I adjust if the day changes?
-- What local context should I know before I go?
-
-Together, these two experiences make Wanderboard more than an itinerary builder. It is a travel board that starts before the trip and continues as a local guide while the trip is happening.
+Guide Mode carries the planning context into the trip itself. It presents the active day, upcoming places, saved information, and board-aware assistance without forcing the traveller to start a separate conversation.
 
 ---
 
-## Architecture
+## What Wanderboard Does
 
-Wanderboard is structured as a Next.js web app with a client-side planning workspace, server-side AI route handlers, and Azure AI Foundry / Azure OpenAI as the intelligence layer.
+Wanderboard helps travellers move from early inspiration to a plan they can actually use.
 
-The core architectural idea is that AI should produce **structured travel data**, not just prose. The app is centered on a `TripBoard` model that can be rendered, edited, persisted, mapped, previewed, and reused across planning and guide surfaces.
+* Describe a trip in natural language.
+* Generate a structured and editable travel board.
+* Save attractions, food stops, activities, nature spots, and custom ideas.
+* Organise saved places into daily plans.
+* Review assumptions, estimated costs, durations, and planning warnings.
+* Explore saved places visually on an interactive map.
+* Preview the board as a practical itinerary.
+* Ask Mori to refine the plan using the existing board as context.
+* Use Guide Mode to follow the active day during the trip.
 
-```mermaid
-flowchart LR
-  User[Traveler] --> Web[Next.js Web App]
-  Web --> Home[Trip Overview]
-  Web --> Planner[Planning Board]
-  Web --> Map[Map Discovery]
-  Web --> Itinerary[Itinerary Preview]
-  Web --> Guide[On-the-Go Guide]
+Wanderboard is designed for weekend getaways, family holidays, food trips, outdoor escapes, and longer journeys where inspiration begins messily but the final plan must remain understandable and flexible.
 
-  Planner --> Store[Zustand Trip Store]
-  Map --> Store
-  Itinerary --> Store
-  Guide --> Store
-  Store --> LocalStorage[localStorage Persistence]
-
-  Planner --> GenerateRoute[POST /api/ai/generate-board]
-  Planner --> ChatRoute[POST /api/ai/chat]
-  Guide --> ChatRoute
-
-  GenerateRoute --> AIHelper[lib/azure-openai.ts]
-  ChatRoute --> AIHelper
-  AIHelper --> Azure[Azure AI Foundry / Azure OpenAI]
-
-  GenerateRoute --> Zod[Zod Validation]
-  ChatRoute --> Zod
-  Zod --> Store
-```
-
-A trip board contains:
-
-- Destination and trip metadata
-- Duration, pace, budget level, and interests
-- Assumptions and warnings
-- Saved places with coordinates, descriptions, notes, cost ranges, tags, and estimated duration
-- Day shells with titles and summaries
-- Day plans that assign saved places to specific days
-
-This gives the product a stable backbone. The AI layer can generate or revise the board, but the user interface remains deterministic, inspectable, and editable.
-
-### Data Flow
-
-```mermaid
-sequenceDiagram
-  participant U as Traveler
-  participant C as Next.js Client
-  participant R as Server AI Route
-  participant A as Azure AI Foundry
-  participant V as Zod Validator
-  participant S as Trip Store
-
-  U->>C: Describe trip or request change
-  C->>R: Send prompt plus board context
-  R->>A: Request structured JSON output
-  A-->>R: Return model response
-  R->>V: Parse and validate schema
-  V-->>R: Typed TripBoard or mutations
-  R-->>C: Return validated data
-  C->>S: Apply board or proposed changes
-  S-->>C: Render updated board, map, itinerary, or guide
-```
+> Cost, duration, and travel-time values are planning estimates. Travellers should verify current opening hours, transport information, prices, accessibility, and entry requirements before travelling.
 
 ---
 
-## How AI Is Used
+## Core Experience
 
-Wanderboard uses AI as a structured planning layer, not as a generic chatbot.
+### Planning Board
 
-### Board Generation
+The Planning Board is the traveller's central workspace before the trip.
 
-When a user describes a trip, Wanderboard sends the prompt and constraints such as destination, duration, pace, budget, and interests to a server-side AI route.
+Instead of returning an itinerary as a block of generated text, Wanderboard stores the result as structured product state. Travellers can inspect places, assign them to days, reorder activities, add personal notes, and continue changing the plan after generation.
 
-The AI returns a complete trip board with:
+Mori can propose updates such as:
 
-- Suggested places
-- Approximate map coordinates
-- Day assignments
-- Cost ranges
-- Practical notes
-- Assumptions
-- Warnings and check-before-you-go guidance
+* Adding a relevant place
+* Moving a place to another day
+* Removing a place from a day
+* Adjusting the pace of a day
+* Editing notes or estimated visit details
+* Explaining why a change may improve the plan
 
-The result becomes an editable board, not a final answer.
+The traveller reviews and controls the resulting board.
 
-### Board Refinement
+### Map Discovery
 
-When a user asks Wanderboard to adjust a plan, the app sends the current board context and the user request to the AI layer.
+The map provides a spatial view of the trip. Travellers can inspect where places are located, identify geographic clusters, and understand whether a proposed daily plan is spread across unrelated areas.
 
-Instead of returning only advice, the AI proposes structured mutations, such as:
+The map and planning views operate on the same saved-place data. Changes made in one surface are reflected across the board, map, itinerary, and guide.
 
-- Add new places
-- Assign a place to a day
-- Remove a place from a day
-- Edit existing place details
-- Explain what changed
+### Itinerary Preview
 
-This keeps the experience grounded in the board. AI suggests changes, while the product preserves user control.
+The itinerary view converts the editable board into a clearer day-by-day presentation. It helps the traveller review the overall pace, daily groupings, notes, and unresolved warnings before the trip begins.
 
-### Local Guide Intelligence
+### Guide Mode
 
-Guide mode extends the same planning context into the trip itself. The long-term vision is for the guide to use the traveler’s current board, current day, saved places, preferences, and practical constraints to provide timely local guidance.
+Guide Mode presents the current plan in a form intended for use during the trip. It focuses on the active day, what is coming next, and contextual information already attached to the board.
 
-The guide should help the traveler adapt without starting over. If the day changes, Wanderboard can reason from the existing plan and suggest what still fits.
+Mori can use the current board and grounded destination knowledge to answer planning questions without losing the traveller's existing trip context.
 
 ---
 
-## AI Service Boundary
+## Demo Flow
 
-AI calls are isolated behind server-side routes under `src/app/api/ai/`. The browser never calls Azure directly and never receives credentials.
+A reviewer can explore the application without connecting personal accounts or providing production credentials.
 
-The AI layer is designed around a clear contract between product state and model output:
+1. Open the included demo trip.
+2. Review its saved places and daily arrangement.
+3. Open the map to inspect how the places are distributed.
+4. Ask Mori to make one of the days more relaxed.
+5. Review the grounded explanation and proposed board changes.
+6. Apply the changes to the board.
+7. Open the itinerary to review the updated day.
+8. Open Guide Mode to view the current-day experience.
 
-- The client sends user intent and current trip context.
-- The server route builds a grounded planning request for Azure AI Foundry / Azure OpenAI.
-- The model returns structured planning data, not freeform UI instructions.
-- The server validates and cleans the response before returning it to the client.
-- The client renders the result as editable board state.
-
-This boundary keeps AI powerful but bounded. The model can help generate and revise plans, but the application decides how those plans are validated, rendered, stored, and edited.
-
-### Route Responsibilities
-
-- `POST /api/ai/generate-board` transforms an initial trip idea into a complete travel board.
-- `POST /api/ai/chat` transforms a planning request into proposed edits for the current board.
-- `GET /api/ai/health` checks whether AI is configured without exposing secrets.
-
-At a high level, the routes share the same pattern:
-
-```mermaid
-flowchart LR
-  Intent[User intent] --> Context[Trip context]
-  Context --> Server[Server AI route]
-  Server --> Azure[Azure AI Foundry / Azure OpenAI]
-  Azure --> Structured[Structured response]
-  Structured --> Validation[Schema validation]
-  Validation --> Board[Editable TripBoard state]
-```
-
-### Azure AI Configuration
-
-Azure AI Foundry / Azure OpenAI is configured through server-only environment variables:
-
-| Variable | Purpose |
-|---|---|
-| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI resource endpoint, for example `https://<resource>.openai.azure.com/` |
-| `AZURE_OPENAI_API_KEY` | Secret API key for the Azure OpenAI resource |
-| `AZURE_OPENAI_DEPLOYMENT` | Model deployment name created in Azure AI Foundry |
-| `AZURE_OPENAI_API_VERSION` | API version, defaults to `2024-02-15-preview` |
-
-The shared helper in `lib/azure-openai.ts` reads this configuration, creates the Azure OpenAI client, requests JSON schema structured output, parses the model response, and validates it before the route returns data to the client.
-
-### Contract Shape
-
-The route contract is intentionally product-level rather than chat-level.
-
-For board generation, the input is a trip idea plus optional constraints such as destination, duration, pace, budget, and interests. The output is a complete `TripBoard` that the app can render across the planner, map, itinerary, and guide surfaces.
-
-For board refinement, the input is the current `TripBoard` plus a user request. The output is a set of proposed board changes, such as adding places, assigning places to days, unassigning places, or editing place details.
-
-For health checks, the output is only whether AI configuration is available. It never exposes API keys, endpoints, or secret values.
-
-If a request is invalid, Azure is unavailable, content is filtered, or the model response cannot be validated, the route returns a typed error state that the UI can handle directly.
+AI generation and refinement require the Microsoft Foundry and Foundry IQ environment variables described below. The visual planning experience remains available through included demo data when cloud services are not configured.
 
 ---
 
 ## Microsoft IQ Integration
 
-Wanderboard uses Azure AI Foundry / Azure OpenAI as the intelligence layer for structured travel planning. The app follows a Foundry IQ-style architecture: user goals, trip constraints, saved places, day plans, and current board context are used as grounding input for AI generation and refinement.
+Wanderboard integrates **Microsoft Foundry IQ** as its grounded destination-knowledge layer.
 
-The important design choice is that AI output is not treated as unstructured text. Wanderboard asks the model for validated planning data that can become editable product state. This makes the AI layer useful for real workflows: generating trip boards, suggesting places, refining day plans, surfacing assumptions, and helping the traveler adapt during the trip.
+Foundry IQ is used to retrieve relevant information from a curated travel knowledge base before Mori proposes changes to a trip. This reduces reliance on the model's general knowledge and gives the application a clearer distinction between retrieved destination information and model-generated planning judgement.
 
-All AI calls happen on the server. API keys stay in environment variables and are never exposed through `NEXT_PUBLIC_*` configuration.
+The Wanderboard knowledge base contains focused planning material for the demonstration destination, including:
+
+* Neighbourhood and area context
+* Suggested visit durations
+* Reasonable nearby groupings
+* Pacing guidance
+* Local practical considerations
+* Accessibility or etiquette notes where available
+* Source titles, URLs, and review dates
+
+When the traveller asks Mori to generate or revise a plan, Wanderboard sends a retrieval query based on:
+
+* The traveller's request
+* Destination
+* Current trip duration and pace
+* Selected day
+* Saved and assigned places
+* Relevant budget and interest constraints
+
+Foundry IQ returns relevant knowledge and supporting references. This retrieved context is then supplied to the model deployment together with the current `TripBoard`.
+
+The model produces structured board data or proposed mutations. Wanderboard validates that output before it can be returned to the client.
+
+```mermaid
+flowchart LR
+  User[Traveller request] --> Client[Next.js client]
+  Client --> Route[Server-side AI route]
+
+  Route --> Query[Build destination knowledge query]
+  Query --> IQ[Microsoft Foundry IQ]
+  IQ --> Grounding[Retrieved knowledge and references]
+
+  Route --> Context[Current TripBoard and constraints]
+  Grounding --> Model[DeepSeek model in Microsoft Foundry]
+  Context --> Model
+
+  Model --> Structured[Structured TripBoard or mutations]
+  Structured --> Validation[Zod validation]
+  Validation --> Review[User reviews proposed changes]
+  Review --> Store[Editable TripBoard state]
+```
+
+### Grounded and Ungrounded Responses
+
+Wanderboard preserves the distinction between retrieved knowledge and model-generated suggestions.
+
+When relevant knowledge is returned, Mori's response includes the supporting source metadata. When the knowledge base does not return a useful result, the application can continue using the current board context, but it marks the recommendation as an ungrounded planning suggestion that should be verified.
+
+Foundry IQ does not directly modify the trip. It supplies destination knowledge to the planning workflow. The model proposes changes, the server validates them, and the traveller decides whether to apply them.
+
+---
+
+## How AI Is Used
+
+Wanderboard uses AI as a structured planning layer rather than a generic chatbot.
+
+### Board Generation
+
+When a traveller describes a trip, the application sends the trip request and available constraints to a server-side route.
+
+The model returns a complete `TripBoard`, which can contain:
+
+* Destination and trip metadata
+* Suggested places
+* Approximate coordinates
+* Day shells and assignments
+* Estimated cost ranges
+* Planning notes
+* Assumptions
+* Warnings
+* Check-before-you-go guidance
+
+The returned board is validated and then rendered as editable application state.
+
+### Board Refinement
+
+For subsequent requests, the application sends the current board together with the traveller's instruction.
+
+Rather than returning only prose, the model proposes typed mutations such as:
+
+* `addPlace`
+* `editPlace`
+* `assignPlaceToDay`
+* `unassignPlaceFromDay`
+* `reorderDayPlaces`
+* `updateDaySummary`
+
+Each response can also include:
+
+* An explanation of the proposed change
+* Its grounding status
+* Supporting sources
+* Warnings that require traveller verification
+
+The model cannot directly modify browser state. Proposed mutations must pass server-side validation before the client can review or apply them.
+
+---
+
+## Architecture
+
+Wanderboard is a Next.js application with a client-side planning workspace, server-side AI routes, Microsoft Foundry model inference, and Foundry IQ retrieval through an Azure AI Search knowledge base.
+
+The application is centred on a structured `TripBoard` model. The same state can be rendered, edited, persisted, mapped, previewed, and reused across the planning and guide experiences.
+
+```mermaid
+flowchart LR
+  User[Traveller] --> Web[Next.js Web App]
+
+  Web --> Home[Trip Overview]
+  Web --> Planner[Planning Board]
+  Web --> Map[Map Discovery]
+  Web --> Itinerary[Itinerary Preview]
+  Web --> Guide[Guide Mode]
+
+  Planner --> Store[Zustand Trip Store]
+  Map --> Store
+  Itinerary --> Store
+  Guide --> Store
+  Store --> Persistence[localStorage Persistence]
+
+  Planner --> Generate[POST /api/ai/generate-board]
+  Planner --> Chat[POST /api/ai/chat]
+  Guide --> Chat
+
+  Generate --> Retrieval[Foundry IQ Retrieval Helper]
+  Chat --> Retrieval
+  Retrieval --> KnowledgeBase[Azure AI Search Knowledge Base]
+
+  Generate --> ModelHelper[Microsoft Foundry Model Helper]
+  Chat --> ModelHelper
+  ModelHelper --> DeepSeek[DeepSeek Deployment]
+
+  KnowledgeBase --> Generate
+  KnowledgeBase --> Chat
+
+  Generate --> Validation[Zod Validation]
+  Chat --> Validation
+  Validation --> Store
+```
+
+### Request Flow
+
+```mermaid
+sequenceDiagram
+  participant U as Traveller
+  participant C as Next.js Client
+  participant R as Server AI Route
+  participant K as Foundry IQ Knowledge Base
+  participant M as Foundry Model
+  participant V as Zod Validator
+  participant S as Trip Store
+
+  U->>C: Request a plan or board change
+  C->>R: Send request and current board context
+  R->>K: Retrieve relevant destination knowledge
+  K-->>R: Return grounded content and references
+  R->>M: Send request, board context, and retrieved knowledge
+  M-->>R: Return structured board data or mutations
+  R->>V: Parse and validate response
+  V-->>R: Return typed result
+  R-->>C: Return proposal, grounding status, and sources
+  C->>S: Apply approved board changes
+  S-->>C: Render updated experience
+```
+
+### AI Service Boundary
+
+All cloud calls are isolated behind server-side routes under `src/app/api/ai/`.
+
+The browser never receives Microsoft Foundry, Azure AI Search, or model credentials.
+
+At the service boundary:
+
+1. The client submits user intent and relevant board context.
+2. The server retrieves destination knowledge through Foundry IQ.
+3. The server builds a constrained model request.
+4. The model returns structured output.
+5. Zod validates and cleans the response.
+6. The client receives a typed result that it can safely render.
+7. The user controls whether proposed changes are applied.
+
+### Route Responsibilities
+
+| Route                         | Responsibility                                                                   |
+| ----------------------------- | -------------------------------------------------------------------------------- |
+| `POST /api/ai/generate-board` | Generates an initial structured trip board                                       |
+| `POST /api/ai/chat`           | Produces grounded explanations and proposed board mutations                      |
+| `GET /api/ai/health`          | Reports whether required AI services are configured without exposing credentials |
+
+---
+
+## Core Data Model
+
+A `TripBoard` contains:
+
+* Destination and trip metadata
+* Duration
+* Travel pace
+* Budget level
+* Interests and preferences
+* Assumptions
+* Warnings
+* Saved places
+* Coordinates
+* Descriptions and personal notes
+* Estimated costs and visit durations
+* Tags
+* Day shells
+* Day plans
+* Place-to-day assignments
+
+This structured model gives the application a stable product backbone. AI can generate and revise the data, but the UI remains deterministic, inspectable, and editable.
+
+---
+
+## GitHub Copilot Usage
+
+Wanderboard was developed with meaningful GitHub Copilot assistance throughout design, implementation, debugging, and documentation.
+
+Copilot supported the development process rather than defining the product independently. Product direction, interaction decisions, data boundaries, validation requirements, visual review, and final implementation choices remained human-directed.
+
+| Development area       | How GitHub Copilot assisted                                                                      | Human contribution                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| Product modelling      | Helped translate requirements into typed `TripBoard`, place, day, and mutation models            | Defined the concepts, relationships, and permitted operations         |
+| Component development  | Assisted with scaffolding planner, map, itinerary, and guide components                          | Directed layout, behaviour, visual hierarchy, and product consistency |
+| State management       | Helped implement Zustand actions and persisted board state                                       | Selected the state model and verified cross-view behaviour            |
+| AI routes              | Assisted with server route structure, request parsing, and typed responses                       | Defined the service boundary and model responsibilities               |
+| Structured output      | Helped implement schema-constrained output and Zod validation                                    | Defined accepted fields and failure behaviour                         |
+| Foundry IQ integration | Assisted with Azure resource scripts, retrieval requests, response parsing, and citation mapping | Selected the knowledge scope and verified retrieved content           |
+| Debugging              | Helped investigate TypeScript, hydration, state, map, and API integration issues                 | Reproduced problems and validated the final fixes                     |
+| Documentation          | Helped refine setup instructions and Mermaid diagrams                                            | Checked all documented behaviour against the implementation           |
+
+Examples of meaningful Copilot-assisted work include:
+
+* Converting the trip-planning requirements into a reusable state model
+* Designing typed model mutations rather than applying freeform AI instructions
+* Creating validation and fallback paths for malformed model responses
+* Integrating Foundry IQ retrieval into the existing server-side model workflow
+* Refactoring repeated interface elements into reusable components
+* Producing and reviewing local setup and Azure provisioning scripts
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16, App Router |
-| Language | TypeScript |
-| Styling | Tailwind CSS v4 |
-| State | Zustand |
-| Persistence | localStorage |
-| Maps | Leaflet, react-leaflet, OpenStreetMap |
-| AI | Azure AI Foundry / Azure OpenAI via server-side routes |
-| Validation | Zod |
-| Icons | Lucide React |
+| Layer                           | Technology                                    |
+| ------------------------------- | --------------------------------------------- |
+| Framework                       | Next.js 16 with App Router                    |
+| Language                        | TypeScript                                    |
+| Styling                         | Tailwind CSS v4                               |
+| State management                | Zustand                                       |
+| Local persistence               | `localStorage`                                |
+| Maps                            | Leaflet, React Leaflet, OpenStreetMap         |
+| Model inference                 | DeepSeek deployment through Microsoft Foundry |
+| Grounded retrieval              | Microsoft Foundry IQ                          |
+| Knowledge storage and retrieval | Azure AI Search knowledge base                |
+| Validation                      | Zod                                           |
+| Icons                           | Lucide React                                  |
 
 ---
 
 ## Project Structure
 
 ```text
-src/app/
-  page.tsx                  Home and trip overview
-  planner/                  Planning board experience
-  itinerary/                Itinerary review experience
-  map/                      Map discovery experience
-  guide/                    On-the-go local guide experience
-  api/ai/                   Server-side AI routes
+src/
+  app/
+    page.tsx
+    planner/
+    itinerary/
+    map/
+    guide/
+    api/
+      ai/
+        generate-board/
+        chat/
+        health/
 
-src/components/
-  home/                     Home and overview components
-  planner/                  Board, map, place, and day planning UI
-  itinerary/                Itinerary cards and preview UI
-  map-discovery/            Search, filters, markers, and place sheet
-  guide/                    Today view and local guide components
-  shared/                   Reusable UI primitives
+  components/
+    home/
+    planner/
+    itinerary/
+    map-discovery/
+    guide/
+    shared/
 
-src/stores/
-  trip-store.ts             Zustand state and localStorage persistence
+  stores/
+    trip-store.ts
 
-src/data/
-  Demo trip, home, map, itinerary, and guide data
+  data/
+    demo/
+    knowledge/
 
-lib/
-  azure-openai.ts           Server-side Azure AI client and structured output helper
-  trip-types.ts             Core TripBoard data model
+  lib/
+    ai/
+      foundry-model.ts
+      foundry-iq.ts
+      prompts.ts
+      schemas.ts
+    trip-types.ts
+
+scripts/
+  azure/
+    provision.sh
+    upload-knowledge.ts
+    create-search-assets.ts
+    verify-foundry-iq.ts
 ```
+
+The exact structure may differ slightly as the project evolves, but AI inference and retrieval remain isolated from client components.
 
 ---
 
@@ -286,8 +428,10 @@ lib/
 
 ### Prerequisites
 
-- Node.js 18+
-- npm or another compatible package manager
+* Node.js 18 or newer
+* npm or another compatible package manager
+* An Azure subscription for cloud-powered AI features
+* Azure CLI for provisioning or inspecting Azure resources
 
 ### Install and Run
 
@@ -296,11 +440,15 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open:
 
-The app can be explored with demo data without Azure credentials. AI-powered generation and refinement require Azure configuration.
+```text
+http://localhost:3000
+```
 
-### Build
+The interface can be explored with included demo data without Azure credentials. AI generation, refinement, and grounded retrieval require additional configuration.
+
+### Production Build
 
 ```bash
 npm run build
@@ -315,48 +463,86 @@ npm run lint
 
 ---
 
-## Optional Azure AI Setup
+## Environment Configuration
 
-Create a `.env.local` file at the repository root:
-
-```env
-AZURE_OPENAI_ENDPOINT=https://<your-resource>.openai.azure.com/
-AZURE_OPENAI_API_KEY=your-api-key-here
-AZURE_OPENAI_DEPLOYMENT=<your-deployment-name>
-AZURE_OPENAI_API_VERSION=2024-02-15-preview
-```
-
-You can copy the placeholder template:
+Copy the environment template:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Then fill in your Azure values and restart the dev server.
+Configure the values produced by the Azure provisioning process:
+
+```env
+FOUNDRY_MODEL_ENDPOINT=
+FOUNDRY_MODEL_API_KEY=
+FOUNDRY_MODEL_DEPLOYMENT=
+
+AZURE_SEARCH_ENDPOINT=
+AZURE_SEARCH_API_KEY=
+AZURE_SEARCH_KNOWLEDGE_BASE=
+AZURE_SEARCH_API_VERSION=2026-04-01
+```
+
+The implementation may use Microsoft Entra ID instead of API keys where supported. Local environment variables and credential files must never be committed.
+
+Restart the development server after changing `.env.local`.
+
+---
+
+## Failure Handling
+
+The application handles cloud-service failures as typed product states.
+
+Possible failures include:
+
+* Missing server configuration
+* Foundry IQ retrieval failure
+* No relevant grounded content
+* Model timeout or unavailability
+* Content filtering
+* Invalid structured output
+* Schema-validation failure
+
+When retrieval does not produce useful knowledge, the application identifies the result as an ungrounded planning suggestion.
+
+When the model response cannot be safely validated, Wanderboard does not apply the proposed changes.
 
 ---
 
 ## Security
 
-- No Azure credentials are committed to this repository.
-- Azure API keys belong only in `.env.local`.
-- `.env.local` and other local environment files are ignored by git.
-- Azure AI calls are made only through server-side route handlers.
-- No `NEXT_PUBLIC_*` Azure variables are used.
-- The app provides demo data so reviewers can explore the experience without requiring secrets.
+* No Azure or Microsoft Foundry credentials are committed.
+* Secrets are stored only in server-side environment variables.
+* `.env.local` and similar local files are ignored by Git.
+* Client components do not call Azure services directly.
+* No Azure credentials use a `NEXT_PUBLIC_*` prefix.
+* AI and retrieval routes validate incoming requests.
+* Model responses are treated as untrusted input until validated.
+* Demo data is included so reviewers can explore the product without receiving project credentials.
+* The knowledge source contains curated public demonstration content rather than private customer information.
 
 ---
 
-## GitHub Copilot Usage
+## Limitations
 
-Wanderboard was built with meaningful GitHub Copilot assistance throughout the development process. Copilot was used to accelerate component scaffolding, TypeScript modeling, route handler implementation, structured AI response handling, UI iteration, debugging, and documentation.
+Wanderboard is a planning assistant, not a source of guaranteed real-time travel information.
 
-The final product direction, architecture decisions, safety boundaries, and submission polish were human-directed.
+The current prototype has the following limitations:
+
+* Suggested coordinates may require place-service verification.
+* Prices and visit durations are estimates.
+* Opening hours and transport conditions may change.
+* The curated knowledge base covers the demonstration scope rather than every destination.
+* Guide Mode does not replace official safety, accessibility, visa, weather, or transport advice.
+* Travellers should verify time-sensitive details with authoritative sources.
 
 ---
 
-## Submission Focus
+## Why Wanderboard
 
-Wanderboard is a creative application for the GitHub Copilot Creative Apps track. It combines AI-assisted development, structured travel intelligence, map-based planning, and a two-stage travel experience: planning before the trip and local guidance during the trip.
+Travel ideas rarely begin as clean itineraries. They begin as messages, screenshots, saved map locations, recommendations, and disconnected notes.
 
-The central idea is simple: travel plans should not be trapped in static itineraries. They should behave like boards, shaped by inspiration, grounded by AI, and flexible enough to keep helping once the traveler is already on the go.
+Wanderboard gives those fragments a shared workspace.
+
+Mori helps create and refine the plan, Foundry IQ supplies relevant destination knowledge, and the traveller remains responsible for the board. The result is not a static AI response, but a living trip plan that can continue supporting the traveller once the journey begins.
