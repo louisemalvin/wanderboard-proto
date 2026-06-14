@@ -2,8 +2,25 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, X } from "lucide-react";
 import { useTripStore } from "@/stores/trip-store";
+import { GroundingStatus } from "@/components/shared/grounding-status";
+
+interface ChatResponsePayload {
+  explanation: string;
+  mutations: Record<string, unknown>;
+  grounding?: {
+    status: "grounded" | "no_results" | "unavailable";
+    sources: Array<{
+      id?: string;
+      title: string;
+      url?: string;
+      excerpt?: string;
+      lastReviewed?: string;
+    }>;
+  };
+  warnings?: string[];
+}
 
 interface MoriComposerProps {
   placeholder?: string;
@@ -17,6 +34,7 @@ export default function MoriComposer({
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [grounding, setGrounding] = useState<ChatResponsePayload["grounding"] | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -26,6 +44,7 @@ export default function MoriComposer({
     setMessage("");
     setError(null);
     setFeedback(null);
+    setGrounding(null);
     setIsLoading(true);
 
     try {
@@ -35,7 +54,9 @@ export default function MoriComposer({
         body: JSON.stringify({ message: trimmed, board }),
       });
 
-      const payload = await response.json();
+      const payload = (await response.json()) as ChatResponsePayload & {
+        error?: { code?: string; message?: string };
+      };
 
       if (!response.ok) {
         const msg =
@@ -51,6 +72,7 @@ export default function MoriComposer({
       setFeedback(
         payload.explanation ?? "I processed your request.",
       );
+      setGrounding(payload.grounding ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -59,16 +81,42 @@ export default function MoriComposer({
   }
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="pointer-events-auto flex flex-col items-center">
       {feedback && (
-        <p className="mb-2 max-w-[640px] rounded-xl border border-[color:var(--wb-border)] bg-[color:var(--wb-surface)] px-4 py-2.5 text-sm leading-relaxed text-[color:var(--wb-ink)]">
-          {feedback}
-        </p>
+        <div className="mb-2 w-full max-w-[640px] space-y-2">
+          <div className="relative rounded-xl border border-[color:var(--wb-border)] bg-[color:var(--wb-surface)] px-4 py-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                setFeedback(null);
+                setGrounding(null);
+              }}
+              className="absolute right-2 top-2 inline-flex h-5 w-5 items-center justify-center rounded-md text-[color:var(--wb-muted)] transition-colors hover:bg-black/5 hover:text-[color:var(--wb-ink)]"
+              aria-label="Dismiss reply"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+            <p className="pr-5 text-sm leading-relaxed text-[color:var(--wb-ink)]">
+              {feedback}
+            </p>
+          </div>
+          <GroundingStatus grounding={grounding ?? undefined} />
+        </div>
       )}
       {error && (
-        <p className="mb-2 max-w-[640px] rounded-xl border border-[color:var(--wb-border)] bg-[color:var(--wb-surface)] px-4 py-2.5 text-sm text-[#ef4444]">
-          {error}
-        </p>
+        <div className="relative mb-2 max-w-[640px] rounded-xl border border-[color:var(--wb-border)] bg-[color:var(--wb-surface)] px-4 py-2.5">
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="absolute right-2 top-2 inline-flex h-5 w-5 items-center justify-center rounded-md text-[color:var(--wb-muted)] transition-colors hover:bg-black/5 hover:text-[color:var(--wb-ink)]"
+            aria-label="Dismiss error"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+          <p className="pr-5 text-sm text-[#ef4444]">
+            {error}
+          </p>
+        </div>
       )}
 
       <form
