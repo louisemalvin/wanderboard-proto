@@ -21,7 +21,7 @@ typography:
   display:
     fontFamily: "Geist, system-ui, sans-serif"
     fontSize: "30px"
-    fontWeight: 700
+    fontWeight: 600
     lineHeight: 1.2
     letterSpacing: "-0.025em"
   headline:

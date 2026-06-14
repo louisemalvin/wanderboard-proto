@@ -72,6 +72,9 @@ export type ItineraryAnalysisDay = {
   stops: Place[];
   legs: ItineraryAnalysisLeg[];
   estimatedFlow: EstimatedDayFlow;
+  weatherCharacter: string;
+  activityStyle: string;
+  clothingGuidance: string[];
 };
 
 export type ItineraryAnalysis = {
@@ -118,6 +121,22 @@ const HOURS_NOTES = [
   "Worth checking ticketed or reservation-style places before you go.",
 ];
 const WINDOWS = ["Start 9:30-10:30", "Start 10:00-11:00", "Start after lunch", "Late afternoon works"];
+
+const WEATHER_CHARACTERS = [
+  "Warm and sunny, light breeze in the afternoon",
+  "Cool with a chance of light rain",
+  "Overcast and mild",
+  "Sunny and hot, seek shade midday",
+  "Breezy and pleasant, good for walking",
+];
+
+const ACTIVITY_STYLES = [
+  "Walking-heavy, mostly outdoors",
+  "Comfortable mix of indoor and outdoor",
+  "Adventurous, some uneven terrain",
+  "Fancy evening, relaxed afternoon",
+  "Transit-heavy, city-focused",
+];
 
 export const DEFAULT_ESTIMATED_DAY_START_TIME = "10:00";
 export const DEFAULT_ESTIMATED_DAY_START_MINUTES = parseTimeToMinutes(DEFAULT_ESTIMATED_DAY_START_TIME) ?? 10 * 60;
@@ -344,6 +363,64 @@ function buildGuideNotes(
   return notes.slice(dayIndex % 2 === 0 ? 0 : 1, dayIndex % 2 === 0 ? 3 : 4);
 }
 
+function buildClothingGuidance(weatherCharacter: string, activityStyle: string): string[] {
+  const items: string[] = [];
+
+  if (/rain|cool|overcast|breezy/i.test(weatherCharacter)) {
+    items.push("Light jacket or raincoat");
+  } else if (/warm|sunny|hot/i.test(weatherCharacter)) {
+    items.push("Sunscreen");
+    items.push("Hat");
+  }
+
+  if (/walking|outdoors|adventurous|uneven/i.test(activityStyle)) {
+    items.push("Comfortable walking shoes");
+  }
+
+  if (/fancy|evening/i.test(activityStyle)) {
+    items.push("Smart casual outfit");
+  }
+
+  if (items.length === 0) items.push("Comfortable walking shoes");
+
+  return items;
+}
+
+export function buildChecklistItems(day: ItineraryAnalysisDay): string[] {
+  const items = ["Water bottle", "Comfortable walking shoes", "Portable charger"];
+
+  if (/rain|cool|overcast|breezy/i.test(day.weatherCharacter)) {
+    items.push("Umbrella");
+    items.push("Light jacket");
+  } else if (/warm|sunny|hot/i.test(day.weatherCharacter)) {
+    items.push("Sunscreen");
+    items.push("Hat");
+  }
+
+  if (/adventurous|uneven/i.test(day.activityStyle)) {
+    items.push("Snacks");
+  }
+
+  if (/fancy|evening/i.test(day.activityStyle)) {
+    items.push("Layer for evening");
+  }
+
+  return [...new Set(items)];
+}
+
+export function isTicketRelevantPlace(place: Place): boolean {
+  if (place.type === "ticket") return true;
+  const text = [
+    place.name,
+    place.description,
+    place.notes,
+    ...(place.tags ?? []),
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return /ticket|museum|reservation|tour|entry|timed|pass|book/i.test(text);
+}
+
 export function buildMockItineraryAnalysis(board: TripBoard | null): ItineraryAnalysis | null {
   if (!board) return null;
 
@@ -371,6 +448,12 @@ export function buildMockItineraryAnalysis(board: TripBoard | null): ItineraryAn
       stops,
       legs,
       estimatedFlow: buildEstimatedDayFlow(stops, legs),
+      weatherCharacter: WEATHER_CHARACTERS[dayIndex % WEATHER_CHARACTERS.length],
+      activityStyle: ACTIVITY_STYLES[dayIndex % ACTIVITY_STYLES.length],
+      clothingGuidance: buildClothingGuidance(
+        WEATHER_CHARACTERS[dayIndex % WEATHER_CHARACTERS.length],
+        ACTIVITY_STYLES[dayIndex % ACTIVITY_STYLES.length],
+      ),
     };
   });
 

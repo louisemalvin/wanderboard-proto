@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
+import { Inter, Geist_Mono, Fraunces } from "next/font/google";
+import AppProvider from "@/components/shared/app-provider";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  style: ["normal"],
 });
 
 const geistMono = Geist_Mono({
@@ -31,12 +40,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${fraunces.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}{/* impeccable-live-start */}
-<script src="http://localhost:8400/live.js"></script>
-{/* impeccable-live-end */}
-</body>
+
+      <body className="min-h-full flex flex-col">
+        <AppProvider>{children}</AppProvider>
+        {/* impeccable-live-start */}
+        <Script src="http://localhost:8400/live.js" strategy="afterInteractive" />
+        {/* impeccable-live-end */}
+      </body>
     </html>
   );
 }

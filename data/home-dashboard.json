@@ -1,0 +1,24 @@
+{
+  "hero": {
+    "heading": "Where are you wandering next?",
+    "subtitle": "Describe the trip you have in mind and Mori will shape the first draft."
+  },
+  "createTrip": {
+    "destinationLabel": "Describe your trip",
+    "destinationPlaceholder": "Five relaxed days in Japan with local food, nature, and minimal rushing",
+    "submitLabel": "Plan with Mori",
+    "loadingLabel": "Planning...",
+    "manualLabel": "Start blank",
+    "hints": [
+      "Portland · coffee and parks",
+      "Sicily · beaches and food",
+      "Tokyo · anime and easy transit"
+    ]
+  },
+  "trips": {
+    "title": "Continue planning",
+    "openAction": "Continue",
+    "emptyTitle": "No boards yet",
+    "emptyDescription": "Describe your trip above to get started."
+  }
+}
