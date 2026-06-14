@@ -2,7 +2,7 @@
 
 **Your AI travel board and on-the-go local guide.**
 
-![Wanderboard hero](./readme-hero.png)
+![Wanderboard hero](./docs/images/readme-hero.png)
 
 **Live demo:** [wanderboard-proto.vercel.app](https://wanderboard-proto.vercel.app)
 
@@ -16,19 +16,19 @@ The traveller always remains in control. AI suggestions are presented as reviewa
 
 ## From Inspiration to a Usable Trip
 
-![Describe the trip you want and plan it with Mori](./readme-plan-with-mori.png)
+![Describe the trip you want and plan it with Mori](./docs/images/readme-plan-with-mori.png)
 
 ### Plan with Mori
 
 Start with a natural-language description of the trip. Mori uses the traveller’s destination, duration, interests, budget, pace, and constraints to create a structured starting point.
 
-![Discover, save, and organise places](./readme-discover.png)
+![Discover, save, and organise places](./docs/images/readme-discover.png)
 
 ### Discover and Organise
 
 Explore places visually, save promising ideas, and arrange them into practical daily plans. Places can be reviewed on the map, assigned to days, reordered, edited, or removed as the trip develops.
 
-![Use Guide Mode while travelling](./readme-guide-mode.png)
+![Use Guide Mode while travelling](./docs/images/readme-guide-mode.png)
 
 ### Travel with Context
 
