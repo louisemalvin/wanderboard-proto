@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { MapPin, Navigation } from "lucide-react";
-import Button from "@/components/shared/button";
+import { MapPin, ArrowRight } from "lucide-react";
 
 interface NextActivityCardProps {
   title: string;
@@ -12,6 +11,7 @@ interface NextActivityCardProps {
   description: string;
   imageUrl?: string;
   imageAlt?: string;
+  onStart?: () => void;
 }
 
 export default function NextActivityCard({
@@ -22,54 +22,121 @@ export default function NextActivityCard({
   description,
   imageUrl,
   imageAlt = title,
+  onStart,
 }: NextActivityCardProps) {
   return (
-    <div className="bg-surface border border-border rounded-xl shadow-surface overflow-hidden">
-      {/* Image / map preview */}
-      <div className="relative h-48 overflow-hidden bg-app-bg">
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt={imageAlt}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 600px"
-          />
-        ) : (
-          <>
-            <div className="absolute inset-0 bg-[#F7F4EF]" />
-            <div className="absolute -left-8 top-8 h-28 w-44 rounded-[45%] bg-[#DDE8DA]/80" />
-            <div className="absolute bottom-[-28px] right-[-10px] h-32 w-48 rounded-[50%] bg-[#A3C9BC]/35" />
-            <div className="absolute left-0 top-11 h-[3px] w-[72%] rotate-[-8deg] rounded-full bg-border/70" />
-            <div className="absolute left-[28%] top-24 h-[3px] w-[62%] rotate-[10deg] rounded-full bg-border/70" />
-            <div className="absolute left-[58%] top-0 h-[80%] w-[3px] rotate-[7deg] rounded-full bg-border/50" />
-          </>
-        )}
-        <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full border border-forest/20 bg-surface px-3 py-2 shadow-surface">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-forest text-white">
-            <MapPin className="h-4 w-4" strokeWidth={1.75} />
-          </span>
-          <span className="max-w-[180px] truncate text-sm font-medium text-ink">
-            {title}
-          </span>
+    <div
+      className="overflow-hidden rounded-2xl border"
+      style={{
+        background: "#FAF8F3",
+        borderColor: "rgba(31, 42, 34, 0.12)",
+        boxShadow:
+          "0 1px 2px rgba(31, 42, 34, 0.04), 0 8px 24px rgba(31, 42, 34, 0.04)",
+      }}
+    >
+      <div className="flex flex-col sm:flex-row">
+        {/* Visual */}
+        <div className="relative h-48 shrink-0 overflow-hidden sm:h-auto sm:w-[240px] lg:w-[280px]">
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={imageAlt}
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 100vw, 280px"
+            />
+          ) : (
+            <div className="absolute inset-0" style={{ background: "var(--color-wb-bg)" }}>
+              <div
+                className="absolute -left-4 top-6 h-24 w-36 rounded-[45%] opacity-70"
+                style={{ background: "var(--wb-sage)" }}
+              />
+              <div
+                className="absolute bottom-[-20px] right-[-8px] h-28 w-40 rounded-[50%] opacity-30"
+                style={{ background: "var(--wb-moss)" }}
+              />
+              <div
+                className="absolute left-1/4 top-1/4 h-[2px] w-[60%] -rotate-[12deg] rounded-full"
+                style={{ background: "rgba(31, 42, 34, 0.1)" }}
+              />
+              <div
+                className="absolute left-[55%] top-0 h-[70%] w-[2px] rotate-[8deg] rounded-full"
+                style={{ background: "rgba(31, 42, 34, 0.1)" }}
+              />
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-full border-2"
+                  style={{
+                    background: "#FAF8F3",
+                    borderColor: "var(--wb-forest)",
+                  }}
+                >
+                  <MapPin
+                    className="h-5 w-5"
+                    strokeWidth={2}
+                    style={{ color: "var(--wb-forest)" }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Card body */}
-      <div className="p-4 space-y-3">
-        <h2 className="text-xl font-semibold text-ink">{title}</h2>
+        {/* Content */}
+        <div className="flex flex-1 flex-col justify-between p-5">
+          <div>
+            <span
+              className="text-xs font-semibold uppercase tracking-wider"
+              style={{ color: "var(--wb-moss)" }}
+            >
+              Next stop
+            </span>
 
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
-          <span className="tabular-nums">{time}</span>
-          <span>{duration}</span>
-          <span>{location}</span>
+            <h2
+              className="mt-1 font-display text-xl leading-tight tracking-tight"
+              style={{ color: "var(--wb-ink)" }}
+            >
+              {title}
+            </h2>
+
+            <div
+              className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-sm"
+              style={{ color: "var(--wb-muted)" }}
+            >
+              <span>{time}</span>
+              <span>{duration}</span>
+              <span>{location}</span>
+            </div>
+
+            <p
+              className="mt-2 text-sm leading-relaxed"
+              style={{ color: "var(--wb-ink)", opacity: 0.75 }}
+            >
+              {description}
+            </p>
+          </div>
+
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onStart}
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-[10px] px-5 text-sm font-semibold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{
+                background: "var(--wb-forest)",
+                outlineColor: "var(--wb-forest)",
+              }}
+            >
+              Start visit
+              <ArrowRight className="h-4 w-4" />
+            </button>
+            <span
+              className="text-xs"
+              style={{ color: "var(--wb-muted)" }}
+            >
+              Starts in 5 min
+            </span>
+          </div>
         </div>
-
-        <p className="text-sm text-ink/80 leading-relaxed">{description}</p>
-
-        <Button variant="primary" size="md" icon={Navigation}>
-          Start
-        </Button>
       </div>
     </div>
   );

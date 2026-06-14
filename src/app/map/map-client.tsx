@@ -198,7 +198,7 @@ export default function MapClient() {
           <MapDiscoverySearch
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search places\u2026"
+            placeholder="Search places…"
           />
 
           <MapDiscoveryFilterChips
@@ -272,8 +272,8 @@ export default function MapClient() {
           )}
 
           {/* Mori composer on map */}
-          <div className="absolute bottom-4 left-1/2 z-[700] hidden -translate-x-1/2 lg:block">
-            <MoriComposer placeholder="Ask Mori to suggest places\u2026" />
+          <div className="absolute bottom-4 left-1/2 z-[700] hidden w-[min(620px,calc(100%-32px))] -translate-x-1/2 lg:block">
+            <MoriComposer placeholder="Ask Mori to suggest places…" />
           </div>
         </div>
 
@@ -340,7 +340,7 @@ export default function MapClient() {
       {/* Mori composer — mobile */}
       <div className="fixed bottom-[64px] left-0 right-0 z-20 bg-[color:var(--wb-bg)] pb-3 pt-2 md:bottom-0 lg:hidden">
         <div className="mx-auto max-w-[1120px] px-5">
-          <MoriComposer placeholder="Ask Mori to suggest places\u2026" />
+          <MoriComposer placeholder="Ask Mori to suggest places…" />
         </div>
       </div>
     </>

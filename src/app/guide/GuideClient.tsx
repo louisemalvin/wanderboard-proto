@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { Pencil } from "lucide-react";
 import { useTripStore } from "@/stores/trip-store";
 import type { Place, TripBoard } from "@/lib/trip-types";
 import type { GuideActivity } from "@/components/guide/guide-types";
 import TripRequiredState from "@/components/shared/trip-required-state";
-import TripWorkflowHeader from "@/components/shared/trip-workflow-header";
-import SegmentedControl from "@/components/shared/segmented-control";
 import NextActivityCard from "@/components/guide/next-activity-card";
 import GuideTimeline from "@/components/guide/guide-timeline";
 import ContextualTipCard from "@/components/guide/contextual-tip-card";
@@ -114,9 +113,10 @@ export default function GuideClient() {
   );
   const nextActivity = allActivities[0];
   const dateLabel = activeDay ? `Day ${activeDay.dayNumber}` : "Guide";
-  const guideStatus = nextActivity ? `Live now · Next: ${nextActivity.title}` : "Live now";
+  const nextLabel = nextActivity ? ` · Next: ${nextActivity.title}` : "";
+  const guideStatus = nextActivity ? `Live now${nextLabel}` : "Live now";
   const guideTip = nextActivity
-    ? `You are on track. Start with ${nextActivity.title}, then follow the remaining stops in order.`
+    ? `You are on track. Start with ${nextActivity.title}, then follow the remaining stops in order. You have enough travel time between both stops.`
     : "Plan at least one activity before switching into guide mode.";
 
   const overallCount = board ? totalAssignedCount(board) : 0;
@@ -130,14 +130,14 @@ export default function GuideClient() {
       ? "Coming up"
       : segment === "done"
         ? "Completed"
-        : "Your Day";
+        : "Your day";
 
   const segmentDescription =
     segment === "planned"
-      ? "The remaining stops for today, without completed items in the way."
+      ? "The remaining stops for today."
       : segment === "done"
         ? "A quick record of what has already been finished."
-        : "Your current stop and the next decisions for the day.";
+        : "Current and upcoming stops.";
 
   const visibleActivities =
     segment === "planned"
@@ -146,7 +146,6 @@ export default function GuideClient() {
         ? completedActivities
         : liveActivities;
 
-  // --- Guard: no trip selected ---
   if (hydrated && !storeHasTrip) {
     return (
       <TripRequiredState
@@ -176,77 +175,125 @@ export default function GuideClient() {
   const dayTabs = board.days;
 
   return (
-    <div className="flex flex-1 flex-col bg-app-bg font-sans">
-      <TripWorkflowHeader
-        title="Guide mode"
-        meta={`${board.destinationText || "Current trip"} · ${dateLabel} · ${guideStatus}`}
-      >
-        <Link
-          href="/itinerary"
-          className="inline-flex min-h-9 items-center justify-center rounded-lg bg-white px-3 text-sm font-semibold text-forest-dark transition-colors hover:bg-forest-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-        >
-          Edit plan
-        </Link>
-      </TripWorkflowHeader>
-
-      {/* Day selector tabs */}
-      <div className="mx-auto w-full max-w-7xl px-4 pt-3 lg:px-6">
-        <div className="mb-2 flex gap-2 overflow-x-auto" role="tablist" aria-label="Guide days">
-          {dayTabs.map((day) => {
-            const count = getDayPlaceCount(board, day.id);
-            const isActive = day.id === activeDay?.id;
-            return (
-              <button
-                key={day.id}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setActiveDayId(day.id)}
-                className={`shrink-0 rounded-lg border px-3 py-2 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-dark ${
-                  isActive
-                    ? "border-forest/30 bg-forest-surface text-forest-dark"
-                    : "border-border bg-surface text-muted hover:border-forest/30 hover:text-ink"
-                }`}
-              >
-                <span className="block font-semibold">Day {day.dayNumber}</span>
-                <span className="block text-xs opacity-75">{count} places</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── Main scrollable content ── */}
-      <main className="flex-1 overflow-y-auto px-4 pb-28 lg:px-6 w-full">
-        {!nextActivity ? (
-          <div className="mx-auto max-w-7xl py-12 text-center">
-            <p className="text-muted text-sm">No activities planned for this day.</p>
+    <div className="flex flex-1 flex-col bg-[color:var(--wb-bg)] font-sans">
+      {/* ── Workspace header ── */}
+      <header className="border-b border-[color:var(--wb-border)] bg-[color:var(--wb-bg)]">
+        <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="font-display text-lg tracking-tight text-[color:var(--wb-ink)]">
+              Guide mode
+            </h1>
+            <p className="mt-0.5 truncate text-sm text-[color:var(--wb-muted)]">
+              {board.destinationText || "Current trip"} · {dateLabel} · {guideStatus}
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-2">
             <Link
               href="/itinerary"
-              className="mt-3 inline-flex min-h-9 items-center justify-center rounded-lg bg-forest-dark px-3 text-sm font-semibold text-white transition-colors hover:bg-forest-dark/90 focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-[10px] border border-[color:var(--wb-border)] bg-[color:var(--wb-surface)] px-4 text-sm font-medium text-[color:var(--wb-ink)] transition-colors hover:bg-[color:var(--wb-bg)] focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ outlineColor: "var(--wb-forest)" }}
             >
-              Open itinerary
+              <Pencil className="h-4 w-4" aria-hidden="true" />
+              Edit plan
             </Link>
           </div>
-        ) : (
-          <>
-            <div className="mx-auto w-full max-w-7xl py-3">
-              <div className="max-w-xl rounded-xl border border-border bg-app-bg p-1">
-                <SegmentedControl
-                  options={SEGMENT_OPTIONS}
-                  value={segment}
-                  onChange={handleSegmentChange}
-                  fullWidth
-                />
-              </div>
-            </div>
+        </div>
+      </header>
 
-            <div className="mx-auto max-w-7xl space-y-5 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
+      {/* Content */}
+      <main className="flex-1 overflow-y-auto px-4 pb-28 lg:px-7">
+        <div className="mx-auto max-w-[1120px]">
+          {/* Day selector tabs */}
+          <div className="mb-4 flex gap-2 overflow-x-auto pt-4" role="tablist" aria-label="Guide days">
+            {dayTabs.map((day) => {
+              const count = getDayPlaceCount(board, day.id);
+              const isActive = day.id === activeDay?.id;
+              return (
+                <button
+                  key={day.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveDayId(day.id)}
+                  className="shrink-0 rounded-lg border px-3 py-2 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+                  style={{
+                    ...(isActive
+                      ? {
+                          background: "#EEF2EB",
+                          borderColor: "#163B2C",
+                          borderWidth: "1.5px",
+                          color: "#163B2C",
+                        }
+                      : {
+                          background: "#FAF8F3",
+                          borderColor: "rgba(31, 42, 34, 0.12)",
+                          color: "var(--wb-muted)",
+                        }),
+                    outlineColor: "var(--wb-forest)",
+                  }}
+                >
+                  <span className="block font-semibold">Day {day.dayNumber}</span>
+                  <span className="block text-xs opacity-75">{count} places</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {!nextActivity ? (
+            <div className="py-16 text-center">
+              <p className="text-sm text-[color:var(--wb-muted)]">
+                Nothing planned for this day yet.
+              </p>
+              <p className="mt-1 text-xs text-[color:var(--wb-muted)]">
+                Add activities in the itinerary before starting Guide Mode.
+              </p>
+              <Link
+                href="/itinerary"
+                className="mt-4 inline-flex min-h-[44px] items-center rounded-[10px] bg-[color:var(--wb-forest)] px-4 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--wb-forest-hover)] focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ outlineColor: "var(--wb-forest)" }}
+              >
+                Edit plan
+              </Link>
+            </div>
+          ) : (
+            <>
+              {/* Planned / Live / Done */}
+              <div className="mb-5">
+                <div className="inline-flex rounded-lg bg-[color:var(--wb-bg)] p-0.5">
+                  {SEGMENT_OPTIONS.map((option) => {
+                    const isSelected = option.value === segment;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        aria-pressed={isSelected}
+                        onClick={() => handleSegmentChange(option.value)}
+                        className="min-h-[44px] min-w-0 rounded-md px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+                        style={{
+                          ...(isSelected
+                            ? {
+                                background: "#163B2C",
+                                color: "#FFFFFF",
+                              }
+                            : {
+                                background: "transparent",
+                                color: "var(--wb-ink)",
+                              }),
+                          outlineColor: "var(--wb-forest)",
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               {segment === "live" ? (
                 <>
-                  {/* Next Activity Card */}
-                  <div className="lg:col-span-2">
-                      <NextActivityCard
+                  {/* Next Activity Hero */}
+                  <div className="mb-6">
+                    <NextActivityCard
                       title={nextActivity.title}
                       time={nextActivity.time}
                       duration={nextActivity.duration ?? "1h"}
@@ -255,19 +302,30 @@ export default function GuideClient() {
                     />
                   </div>
 
-                  {/* Timeline */}
-                  <GuideTimeline
-                    activities={visibleActivities}
-                    title={segmentTitle}
-                    description={segmentDescription}
-                  />
+                  {/* Two-column grid */}
+                  <div className="guide-grid">
+                    <div>
+                      <GuideTimeline
+                        activities={visibleActivities}
+                        title={segmentTitle}
+                        description={segmentDescription}
+                      />
+                    </div>
 
-                  {/* Contextual Tip */}
-                  <ContextualTipCard tip={guideTip} />
+                    <div className="lg:sticky lg:top-4">
+                      <ContextualTipCard tip={guideTip} />
+                    </div>
+                  </div>
                 </>
               ) : (
-                <div className="lg:col-span-2">
-                  <div className="rounded-xl border border-border bg-surface p-4 shadow-surface">
+                <div className="max-w-2xl">
+                  <div
+                    className="rounded-2xl border p-5"
+                    style={{
+                      background: "#FAF8F3",
+                      borderColor: "rgba(31, 42, 34, 0.12)",
+                    }}
+                  >
                     <GuideTimeline
                       activities={visibleActivities}
                       title={segmentTitle}
@@ -276,13 +334,13 @@ export default function GuideClient() {
                   </div>
                 </div>
               )}
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </main>
 
-      {/* ── Mori composer (above bottom nav) ── */}
-      <div className="fixed bottom-[64px] left-0 right-0 z-20 bg-app-bg pb-3 pt-2 md:bottom-0">
+      {/* Mori composer */}
+      <div className="fixed bottom-[64px] left-0 right-0 z-20 bg-[color:var(--wb-bg)] pb-3 pt-2 md:bottom-0">
         <div className="mx-auto max-w-[1120px] px-5">
           <MoriComposer placeholder="Ask Mori about your day..." />
         </div>

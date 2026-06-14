@@ -105,6 +105,19 @@
     }
   }
 
+  .guide-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  @media (min-width: 1024px) {
+    .guide-grid {
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+    }
+  }
+
   *:focus-visible {
     outline: 2px solid #163B2C;
     outline-offset: 2px;

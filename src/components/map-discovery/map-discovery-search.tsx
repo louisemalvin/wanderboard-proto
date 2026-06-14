@@ -12,7 +12,7 @@ interface MapDiscoverySearchProps {
 export default function MapDiscoverySearch({
   value,
   onChange,
-  placeholder = "Search places\u2026",
+  placeholder = "Search places…",
 }: MapDiscoverySearchProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 

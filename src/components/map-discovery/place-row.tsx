@@ -27,10 +27,17 @@ export default function PlaceRow({
   onSelect,
 }: PlaceRowProps) {
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect(place.id)}
-      className="flex w-full items-center gap-3 border-b px-3.5 py-2.5 text-left transition-colors last:border-b-0"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(place.id);
+        }
+      }}
+      className="flex w-full items-center gap-3 border-b px-3.5 py-2.5 text-left transition-colors last:border-b-0 cursor-pointer"
       style={{
         minHeight: 66,
         ...(isBookmarked
@@ -94,6 +101,6 @@ export default function PlaceRow({
           }}
         />
       </button>
-    </button>
+    </div>
   );
 }

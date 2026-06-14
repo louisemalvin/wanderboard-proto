@@ -10,7 +10,7 @@ interface MoriComposerProps {
 }
 
 export default function MoriComposer({
-  placeholder = "Ask Mori about this itinerary\u2026",
+  placeholder = "Ask Mori about this itinerary…",
 }: MoriComposerProps) {
   const board = useTripStore((s) => s.board);
   const [message, setMessage] = useState("");
@@ -75,7 +75,6 @@ export default function MoriComposer({
         onSubmit={handleSubmit}
         className="flex w-full items-center gap-2 rounded-2xl border border-[color:var(--wb-border)] bg-[color:var(--wb-surface)] px-3 py-2.5"
         style={{
-          maxWidth: "min(680px, calc(100% - 48px))",
           boxShadow:
             "0 1px 2px rgba(31, 42, 34, 0.04), 0 8px 24px rgba(31, 42, 34, 0.06)",
         }}
