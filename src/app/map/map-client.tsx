@@ -1,14 +1,10 @@
 "use client";
 
-// ------------------------------------------------------------------
-// Map & Discovery screen client orchestrator
-// Assembles map canvas, search, filter chips, controls, bottom sheet
-// ------------------------------------------------------------------
-
 import { useState, useMemo, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Bookmark } from "lucide-react";
+import { Bookmark, ArrowRight } from "lucide-react";
+import Image from "next/image";
 import { useTripStore } from "@/stores/trip-store";
 import type { Place } from "@/lib/trip-types";
 import TripRequiredState from "@/components/shared/trip-required-state";
@@ -31,7 +27,8 @@ const DiscoveryLeafletMap = dynamic(
 
 type MapCommand = {
   id: number;
-  type: "zoom-in" | "zoom-out" | "recenter";
+  type: "zoom-in" | "zoom-out" | "recenter" | "focus";
+  placeId?: string;
 };
 
 function discoveryToPlace(place: DiscoveryPlace): Place {
@@ -48,17 +45,26 @@ function discoveryToPlace(place: DiscoveryPlace): Place {
   };
 }
 
+const typeLabels: Record<string, string> = {
+  attraction: "Attraction",
+  food: "Food & Drink",
+  nature: "Nature",
+  shopping: "Shopping",
+  area: "Area",
+};
+
 export default function MapClient() {
   const currentTripId = useTripStore((s) => s.currentTripId);
   const board = useTripStore((s) => s.board);
   const savePlace = useTripStore((s) => s.savePlace);
   const unsavePlace = useTripStore((s) => s.unsavePlace);
 
-  // --- State ---
   const [hydrated, setHydrated] = useState(false);
   const [storeHasTrip, setStoreHasTrip] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilterId, setSelectedFilterId] = useState("all");
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"all" | "saved">("all");
   const [mapCommand, setMapCommand] = useState<MapCommand | null>(null);
 
   useEffect(() => {
@@ -78,28 +84,34 @@ export default function MapClient() {
     };
   }, []);
 
-  // --- Derived: filtered places ---
+  const savedIds = useMemo(
+    () => new Set(Object.keys(board?.savedPlaces ?? {})),
+    [board?.savedPlaces],
+  );
+  const savedPlacesCount = savedIds.size;
+
   const filteredPlaces = useMemo(() => {
     const selectedChip = filterChips.find((c) => c.id === selectedFilterId);
     const filterType = selectedChip?.type || "all";
 
-    return discoveryPlaces.filter((place) => {
-      // Apply type filter
+    let results = discoveryPlaces.filter((place) => {
       if (filterType !== "all" && place.type !== filterType) return false;
-
-      // Apply search filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         if (!place.name.toLowerCase().includes(q)) return false;
       }
-
       return true;
     });
-  }, [selectedFilterId, searchQuery]);
 
-  // --- Derived: flagged markers ---
+    if (activeTab === "saved") {
+      results = results.filter((place) => savedIds.has(place.id));
+    }
+
+    return results;
+  }, [selectedFilterId, searchQuery, activeTab, savedIds]);
+
   const markerHighlightIds = useMemo(() => {
-    if (selectedFilterId === "all") return null; // no highlighting
+    if (selectedFilterId === "all") return null;
     const selectedChip = filterChips.find((c) => c.id === selectedFilterId);
     if (!selectedChip || selectedChip.type === "all") return null;
     return discoveryPlaces
@@ -107,9 +119,26 @@ export default function MapClient() {
       .map((p) => p.id);
   }, [selectedFilterId]);
 
-  // --- Handlers ---
+  const selectedPlace = useMemo(
+    () => discoveryPlaces.find((p) => p.id === selectedPlaceId) ?? null,
+    [selectedPlaceId],
+  );
+  const isSelectedPlaceSaved = selectedPlaceId ? savedIds.has(selectedPlaceId) : false;
+
   const handleFilterSelect = useCallback((id: string) => {
     setSelectedFilterId(id);
+    setActiveTab("all");
+  }, []);
+
+  const handleTabChange = useCallback((tab: "all" | "saved") => {
+    setActiveTab(tab);
+  }, []);
+
+  const handleSelectPlace = useCallback((id: string | null) => {
+    setSelectedPlaceId(id);
+    if (id) {
+      setMapCommand({ id: Date.now(), type: "focus", placeId: id });
+    }
   }, []);
 
   const handleZoomIn = useCallback(() => {
@@ -140,40 +169,6 @@ export default function MapClient() {
     }
   }, [board, currentTripId, savePlace, unsavePlace]);
 
-  // --- Bottom sheet footer: hand off saved places to planning ---
-  const savedPlacesCount = Object.keys(board?.savedPlaces ?? {}).length;
-  const bottomSheetFooter = (
-    <Link
-      href={savedPlacesCount > 0 ? "/itinerary" : "#"}
-      aria-disabled={savedPlacesCount === 0}
-      className={`flex min-h-[44px] w-full items-center gap-3 px-4 py-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest ${
-        savedPlacesCount > 0
-          ? "hover:bg-app-bg"
-          : "pointer-events-none opacity-65"
-      }`}
-    >
-      <div className="shrink-0 w-9 h-9 rounded-full bg-forest-surface flex items-center justify-center">
-        <Bookmark className="w-4 h-4 text-forest" strokeWidth={1.5} />
-      </div>
-      <div className="flex-1">
-        <span className="text-sm font-medium text-forest font-sans">
-          {savedPlacesCount > 0 ? "Plan itinerary" : "Save places to start planning"}
-        </span>
-        <p className="mt-0.5 text-xs text-muted">
-          {savedPlacesCount > 0
-            ? "Assign saved destinations into days."
-            : "Bookmark destinations from the list first."}
-        </p>
-      </div>
-      {savedPlacesCount > 0 && (
-        <span className="text-xs text-muted font-sans bg-app-bg rounded-full px-2 py-0.5">
-          {savedPlacesCount}
-        </span>
-      )}
-    </Link>
-  );
-
-  // --- Guard: no trip selected ---
   if (hydrated && !storeHasTrip) {
     return (
       <TripRequiredState
@@ -187,69 +182,167 @@ export default function MapClient() {
 
   return (
     <>
-    <div className="relative h-[calc(100vh-7rem)] min-h-[620px] w-full bg-app-bg md:h-screen md:min-h-0 lg:grid lg:grid-cols-[minmax(0,1fr)_360px]">
-      {/* Screen reader heading for accessibility */}
-      <h1 className="sr-only">Map &amp; Discovery</h1>
-      <div className="relative min-h-0 overflow-hidden lg:border-r lg:border-border">
-        <DiscoveryLeafletMap
-          places={discoveryPlaces}
-          highlightedIds={markerHighlightIds}
-          command={mapCommand}
-        />
+      <div className="relative h-[calc(100vh-7rem)] min-h-[620px] w-full bg-[color:var(--wb-bg)] md:h-screen md:min-h-0 lg:grid" style={{ gridTemplateColumns: "minmax(0, 1fr) 340px" }}>
+        <h1 className="sr-only">Map &amp; Discovery</h1>
 
-        {/* Floating search bar */}
-        <MapDiscoverySearch
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Search places..."
-        />
+        <div className="relative min-h-0 overflow-hidden">
+          <DiscoveryLeafletMap
+            places={discoveryPlaces}
+            highlightedIds={markerHighlightIds}
+            command={mapCommand}
+            savedIds={savedIds}
+            selectedId={selectedPlaceId}
+            onSelectPlace={handleSelectPlace}
+          />
 
-        {/* Floating filter chips */}
-        <MapDiscoveryFilterChips
-          chips={filterChips}
-          selectedId={selectedFilterId}
-          onSelect={handleFilterSelect}
-        />
+          <MapDiscoverySearch
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search places\u2026"
+          />
 
-        {/* Zoom controls */}
-        <MapDiscoveryControls
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-          onRecenter={handleRecenter}
-        />
-      </div>
+          <MapDiscoveryFilterChips
+            chips={filterChips}
+            selectedId={selectedFilterId}
+            onSelect={handleFilterSelect}
+          />
 
-      {/* Bottom sheet with place rows */}
-      <PlacesBottomSheet
-        title="Discover places"
-        count={filteredPlaces.length}
-        footer={bottomSheetFooter}
-      >
-        {filteredPlaces.length === 0 ? (
-          <div className="px-4 py-8 text-center">
-            <p className="text-sm text-muted font-sans">
-              No matching places found.
-            </p>
+          <MapDiscoveryControls
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onRecenter={handleRecenter}
+          />
+
+          {/* Selected-place preview card */}
+          {selectedPlace && (
+            <div className="absolute bottom-32 left-1/2 z-[700] -translate-x-1/2 md:bottom-40">
+              <div
+                className="flex items-center gap-4 rounded-2xl border px-4 py-3.5"
+                style={{
+                  width: "min(520px, calc(100vw - 48px))",
+                  background: "#FAF8F3",
+                  borderColor: "rgba(31, 42, 34, 0.12)",
+                  boxShadow:
+                    "0 1px 2px rgba(31, 42, 34, 0.04), 0 10px 30px rgba(31, 42, 34, 0.08)",
+                }}
+              >
+                <div className="mr-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ background: "rgba(31, 42, 34, 0.06)" }}>
+                  <Image
+                    src="/mori.png"
+                    alt=""
+                    width={24}
+                    height={24}
+                    className="h-6 w-6 rounded-full opacity-40"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-[color:var(--wb-ink)]">
+                    {selectedPlace.name}
+                  </p>
+                  <p className="text-xs text-[color:var(--wb-muted)]">
+                    {typeLabels[selectedPlace.type] || selectedPlace.type}
+                    {selectedPlace.city ? ` \u00b7 ${selectedPlace.city}` : ""}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  {isSelectedPlaceSaved ? (
+                    <button
+                      type="button"
+                      onClick={() => handleBookmarkToggle(selectedPlace.id)}
+                      className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[color:var(--wb-sage)] px-3 text-xs font-semibold text-[color:var(--wb-forest)] transition-colors hover:bg-[color:var(--wb-sage-light)] focus-visible:outline-2 focus-visible:outline-offset-2"
+                      style={{ outlineColor: "var(--wb-forest)" }}
+                    >
+                      <Bookmark className="h-3.5 w-3.5" fill="currentColor" strokeWidth={0} />
+                      Saved
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleBookmarkToggle(selectedPlace.id)}
+                      className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[color:var(--wb-forest)] px-3 text-xs font-semibold text-white transition-colors hover:bg-[color:var(--wb-forest-hover)] focus-visible:outline-2 focus-visible:outline-offset-2"
+                      style={{ outlineColor: "var(--wb-forest)" }}
+                    >
+                      <Bookmark className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      Save place
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Mori composer on map */}
+          <div className="absolute bottom-4 left-1/2 z-[700] hidden -translate-x-1/2 lg:block">
+            <MoriComposer placeholder="Ask Mori to suggest places\u2026" />
           </div>
-        ) : (
-          filteredPlaces.map((place) => (
-            <PlaceRow
-              key={place.id}
-              place={{
-                ...place,
-                isBookmarked: Boolean(board?.savedPlaces[place.id]) || place.isBookmarked,
-              }}
-              onBookmarkToggle={handleBookmarkToggle}
-            />
-          ))
-        )}
-      </PlacesBottomSheet>
-    </div>
-    <div className="fixed bottom-[64px] left-0 right-0 z-20 bg-app-bg pb-3 pt-2 md:bottom-0">
-      <div className="mx-auto max-w-[1120px] px-5">
-        <MoriComposer placeholder="Ask Mori to suggest places..." />
+        </div>
+
+        {/* Right results panel */}
+        <PlacesBottomSheet
+          title="Discover places"
+          count={filteredPlaces.length}
+          savedCount={savedPlacesCount}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          footer={
+            savedPlacesCount > 0 ? (
+              <Link
+                href="/itinerary"
+                className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:brightness-[0.98]"
+                style={{
+                  background: "#EEF2EB",
+                  borderTop: "1px solid rgba(22, 59, 44, 0.14)",
+                }}
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ background: "rgba(22, 59, 44, 0.1)" }}>
+                  <Bookmark className="h-4 w-4" style={{ color: "var(--wb-forest)" }} strokeWidth={1.5} />
+                </div>
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-[color:var(--wb-ink)]">
+                    {savedPlacesCount} {savedPlacesCount === 1 ? "place" : "places"} saved
+                  </span>
+                  <p className="text-xs text-[color:var(--wb-muted)]">
+                    Ready to add them to your itinerary.
+                  </p>
+                </div>
+                <span className="text-sm font-semibold text-[color:var(--wb-forest)]">
+                  Plan itinerary
+                </span>
+                <ArrowRight className="h-4 w-4 text-[color:var(--wb-forest)]" strokeWidth={1.5} />
+              </Link>
+            ) : undefined
+          }
+        >
+          {filteredPlaces.length === 0 ? (
+            <div className="px-4 py-12 text-center">
+              <Bookmark className="mx-auto mb-3 h-5 w-5 text-[color:var(--wb-muted)]" />
+              <p className="text-sm text-[color:var(--wb-muted)]">
+                {activeTab === "saved"
+                  ? "No saved places yet."
+                  : "No matching places found."}
+              </p>
+            </div>
+          ) : (
+            filteredPlaces.map((place) => (
+              <PlaceRow
+                key={place.id}
+                place={place}
+                isBookmarked={savedIds.has(place.id)}
+                isSelected={selectedPlaceId === place.id}
+                onBookmarkToggle={handleBookmarkToggle}
+                onSelect={handleSelectPlace}
+              />
+            ))
+          )}
+        </PlacesBottomSheet>
       </div>
-    </div>
+
+      {/* Mori composer — mobile */}
+      <div className="fixed bottom-[64px] left-0 right-0 z-20 bg-[color:var(--wb-bg)] pb-3 pt-2 md:bottom-0 lg:hidden">
+        <div className="mx-auto max-w-[1120px] px-5">
+          <MoriComposer placeholder="Ask Mori to suggest places\u2026" />
+        </div>
+      </div>
     </>
   );
 }

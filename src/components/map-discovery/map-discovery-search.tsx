@@ -1,10 +1,6 @@
 "use client";
 
-// ------------------------------------------------------------------
-// Floating search card pinned at top of the map
-// ------------------------------------------------------------------
-
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useRef } from "react";
 
 interface MapDiscoverySearchProps {
@@ -16,23 +12,41 @@ interface MapDiscoverySearchProps {
 export default function MapDiscoverySearch({
   value,
   onChange,
-  placeholder = "Search places...",
+  placeholder = "Search places\u2026",
 }: MapDiscoverySearchProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="absolute top-4 left-4 right-4 z-[700] max-w-[calc(100%-32px)] mx-auto md:left-5 md:right-auto md:top-5 md:mx-0 md:w-[min(420px,calc(100%-40px))] md:max-w-none">
-      <div className="flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3 shadow-surface">
-        <Search className="w-5 h-5 text-muted shrink-0" strokeWidth={1.5} />
+    <div className="absolute top-4 left-4 right-4 z-[700] md:left-5 md:right-auto md:top-5 md:mx-0 md:w-[min(360px,calc(100%-40px))] md:max-w-none">
+      <div
+        className="flex items-center gap-2.5 rounded-xl border bg-[#FAF8F3] px-3.5 py-3"
+        style={{
+          borderColor: "rgba(31, 42, 34, 0.12)",
+          boxShadow:
+            "0 1px 2px rgba(31, 42, 34, 0.04), 0 8px 24px rgba(31, 42, 34, 0.08)",
+          height: 44,
+        }}
+      >
+        <Search className="h-4 w-4 shrink-0 text-[color:var(--wb-muted)]" strokeWidth={1.5} />
         <input
           ref={inputRef}
           type="search"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 bg-transparent text-ink text-sm font-sans placeholder:text-muted/60 focus:outline-none"
+          className="min-w-0 flex-1 bg-transparent text-sm text-[color:var(--wb-ink)] placeholder:text-[color:var(--wb-muted)] focus:outline-none"
           aria-label="Search places"
         />
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            aria-label="Clear search"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[color:var(--wb-muted)] transition-colors hover:bg-[color:var(--wb-sage-light)] hover:text-[color:var(--wb-ink)]"
+          >
+            <X className="h-3.5 w-3.5" strokeWidth={1.75} />
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,10 +1,5 @@
 "use client";
 
-// ------------------------------------------------------------------
-// Floating map controls: zoom in (+), zoom out (-), re-center
-// Renders on the right side of the map
-// ------------------------------------------------------------------
-
 import { Plus, Minus, Crosshair } from "lucide-react";
 
 interface MapDiscoveryControlsProps {
@@ -19,36 +14,50 @@ export default function MapDiscoveryControls({
   onRecenter,
 }: MapDiscoveryControlsProps) {
   return (
-    <div className="absolute right-4 top-1/2 z-[700] flex -translate-y-1/2 flex-col items-center gap-1 md:right-5">
-      {/* Zoom in */}
+    <div className="absolute bottom-24 right-4 z-[700] flex flex-col items-center gap-1 md:bottom-36 md:right-5">
       <button
         type="button"
         aria-label="Zoom in"
         onClick={onZoomIn}
-        className="flex items-center justify-center w-[44px] h-[44px] rounded-lg bg-surface border border-border shadow-surface text-ink hover:bg-app-bg transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+        className="flex items-center justify-center w-[44px] h-[44px] rounded-[10px] border text-[color:var(--wb-ink)] transition-colors hover:bg-[color:var(--wb-bg)] focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{
+          background: "#FAF8F3",
+          borderColor: "rgba(31, 42, 34, 0.12)",
+          boxShadow: "0 1px 2px rgba(31, 42, 34, 0.04)",
+          outlineColor: "var(--wb-forest)",
+        }}
       >
         <Plus className="w-5 h-5" strokeWidth={1.5} />
       </button>
 
-      {/* Zoom out */}
       <button
         type="button"
         aria-label="Zoom out"
         onClick={onZoomOut}
-        className="flex items-center justify-center w-[44px] h-[44px] rounded-lg bg-surface border border-border shadow-surface text-ink hover:bg-app-bg transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+        className="flex items-center justify-center w-[44px] h-[44px] rounded-[10px] border text-[color:var(--wb-ink)] transition-colors hover:bg-[color:var(--wb-bg)] focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{
+          background: "#FAF8F3",
+          borderColor: "rgba(31, 42, 34, 0.12)",
+          boxShadow: "0 1px 2px rgba(31, 42, 34, 0.04)",
+          outlineColor: "var(--wb-forest)",
+        }}
       >
         <Minus className="w-5 h-5" strokeWidth={1.5} />
       </button>
 
-      {/* Separator line */}
-      <div className="w-6 h-px bg-border my-1" />
+      <div className="w-6 h-px my-0.5" style={{ background: "rgba(31, 42, 34, 0.12)" }} />
 
-      {/* Re-center */}
       <button
         type="button"
         aria-label="Re-center map"
         onClick={onRecenter}
-        className="flex items-center justify-center w-[44px] h-[44px] rounded-lg bg-surface border border-border shadow-surface text-ink hover:bg-app-bg transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+        className="flex items-center justify-center w-[44px] h-[44px] rounded-[10px] border text-[color:var(--wb-ink)] transition-colors hover:bg-[color:var(--wb-bg)] focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{
+          background: "#FAF8F3",
+          borderColor: "rgba(31, 42, 34, 0.12)",
+          boxShadow: "0 1px 2px rgba(31, 42, 34, 0.04)",
+          outlineColor: "var(--wb-forest)",
+        }}
       >
         <Crosshair className="w-5 h-5" strokeWidth={1.5} />
       </button>

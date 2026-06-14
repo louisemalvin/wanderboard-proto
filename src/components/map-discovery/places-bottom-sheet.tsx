@@ -1,11 +1,5 @@
 "use client";
 
-// ------------------------------------------------------------------
-// Bottom sheet with collapsed / half / expanded states
-// Drag handle responds to touch/pointer; keyboard users toggle via
-// a dedicated button with aria-expanded.
-// ------------------------------------------------------------------
-
 import { useState, useRef, useCallback, useEffect } from "react";
 import { ChevronUp } from "lucide-react";
 
@@ -15,6 +9,9 @@ interface PlacesBottomSheetProps {
   children: React.ReactNode;
   title: string;
   count: number;
+  savedCount: number;
+  activeTab: "all" | "saved";
+  onTabChange: (tab: "all" | "saved") => void;
   footer?: React.ReactNode;
 }
 
@@ -36,6 +33,9 @@ export default function PlacesBottomSheet({
   children,
   title,
   count,
+  savedCount,
+  activeTab,
+  onTabChange,
   footer,
 }: PlacesBottomSheetProps) {
   const [state, setState] = useState<SheetState>("half");
@@ -45,7 +45,6 @@ export default function PlacesBottomSheet({
   const startYRef = useRef(0);
   const liveRef = useRef<HTMLDivElement>(null);
 
-  // Announce state changes to screen readers
   useEffect(() => {
     if (liveRef.current) {
       liveRef.current.textContent = `Bottom sheet ${STATE_LABELS[state]}`;
@@ -65,10 +64,8 @@ export default function PlacesBottomSheet({
     setDragOffset(0);
   }, []);
 
-  // --- Pointer event handlers ---
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
-      // Capture pointer so we get move/up events even outside element
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
       startYRef.current = e.clientY;
       setIsDragging(true);
@@ -89,26 +86,20 @@ export default function PlacesBottomSheet({
     () => {
       if (!isDragging) return;
       setIsDragging(false);
-
       if (dragOffset < -30) {
-        // Swiping up
         if (state === "collapsed") snapToState("half");
         else snapToState("expanded");
       } else if (dragOffset > 30) {
-        // Swiping down
         if (state === "expanded") snapToState("half");
         else snapToState("collapsed");
       } else {
-        // Small movement — stay in current state
         snapToState(state);
       }
-
       setDragOffset(0);
     },
     [isDragging, state, dragOffset, snapToState],
   );
 
-  // Compute height during drag preview
   const getBaseHeight = (s: SheetState): number => {
     if (typeof window === "undefined") return s === "collapsed" ? 64 : 400;
     switch (s) {
@@ -130,37 +121,88 @@ export default function PlacesBottomSheet({
     <>
       {/* Desktop side panel (visible at lg+) */}
       <div
-        className="hidden min-h-0 bg-surface lg:flex lg:flex-col lg:overflow-hidden"
+        className="hidden min-h-0 lg:flex lg:flex-col lg:overflow-hidden"
         role="region"
         aria-label={`${title}, ${count} places`}
+        style={{
+          background: "#FAF8F3",
+          borderLeft: "1px solid rgba(31, 42, 34, 0.12)",
+          width: 340,
+        }}
       >
-        {/* Title row */}
-        <div className="shrink-0 border-b border-border px-5 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-base font-semibold text-ink font-sans">
-              {title}
-            </h2>
-            <span className="rounded-full bg-app-bg px-2 py-1 text-xs font-medium text-muted font-sans">
-              {count}
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-muted font-sans">
-            Review candidates, save your picks, then move them into the itinerary.
+        {/* Header */}
+        <div className="shrink-0 px-4 pt-5">
+          <h2 className="text-base font-semibold text-[color:var(--wb-ink)]">
+            Discover places
+          </h2>
+          <p className="mt-1 text-xs leading-relaxed text-[color:var(--wb-muted)]">
+            Review candidates, save your picks,
+            <br />
+            then move them into the itinerary.
           </p>
+
+          {/* Tabs */}
+          <div className="mt-4 flex gap-2">
+            <button
+              type="button"
+              onClick={() => onTabChange("all")}
+              className="rounded-lg px-3 py-1.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{
+                ...(activeTab === "all"
+                  ? {
+                      background: "#163B2C",
+                      color: "#FFFFFF",
+                      fontWeight: 600,
+                    }
+                  : {
+                      background: "transparent",
+                      color: "var(--wb-muted)",
+                      fontWeight: 500,
+                    }),
+                outlineColor: "var(--wb-forest)",
+              }}
+            >
+              All {count}
+            </button>
+            <button
+              type="button"
+              onClick={() => onTabChange("saved")}
+              className="rounded-lg px-3 py-1.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{
+                ...(activeTab === "saved"
+                  ? {
+                      background: "#163B2C",
+                      color: "#FFFFFF",
+                      fontWeight: 600,
+                    }
+                  : {
+                      background: "transparent",
+                      color: "var(--wb-muted)",
+                      fontWeight: 500,
+                    }),
+                outlineColor: "var(--wb-forest)",
+              }}
+            >
+              Saved {savedCount}
+            </button>
+          </div>
         </div>
 
-        {/* Scrollable content */}
+        {/* Divider */}
+        <div className="mx-4 mt-3 h-px shrink-0" style={{ background: "rgba(31, 42, 34, 0.08)" }} />
+
+        {/* Scrollable results */}
         <div className="flex-1 overflow-y-auto">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="border-t border-border/50 shrink-0">{footer}</div>
+          <div className="shrink-0">{footer}</div>
         )}
       </div>
 
-      {/* Mobile bottom sheet (hidden at lg+) — z-[60] to stay above bottom nav (z-50) */}
+      {/* Mobile bottom sheet (hidden at lg+) */}
       <div
         ref={sheetRef}
         className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-2xl border-t border-border shadow-surface transition-[height] duration-300 ease-out overflow-hidden lg:hidden"
@@ -170,26 +212,20 @@ export default function PlacesBottomSheet({
         role="region"
         aria-label={`${title}, ${count} places`}
       >
-        {/* Drag handle area */}
         <div
           className="flex flex-col items-center pt-2 pb-1 cursor-grab active:cursor-grabbing select-none touch-none"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
         >
-          {/* Visual drag bar */}
           <div className="w-9 h-1 rounded-full bg-border mb-2" />
-
-          {/* Title row */}
           <div className="flex items-center justify-between w-full px-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold text-ink font-sans">
+              <h2 className="text-sm font-semibold text-ink">
                 {title}
               </h2>
-              <span className="text-xs text-muted font-sans">({count})</span>
+              <span className="text-xs text-muted">({count})</span>
             </div>
-
-            {/* Keyboard accessible state toggle */}
             <button
               type="button"
               aria-expanded={state !== "collapsed"}
@@ -209,27 +245,23 @@ export default function PlacesBottomSheet({
           </div>
         </div>
 
-        {/* Scrollable content area */}
         <div
           className={`overflow-y-auto pb-16 ${
             state === "collapsed" ? "hidden" : "block"
           }`}
           style={{
-              maxHeight:
-                state !== "collapsed"
-                  ? `calc(${SHEET_HEIGHTS[state]} - 80px)`
-                  : "0",
+            maxHeight:
+              state !== "collapsed"
+                ? `calc(${SHEET_HEIGHTS[state]} - 80px)`
+                : "0",
           }}
         >
           {children}
-
-          {/* Footer action */}
           {footer && state !== "collapsed" && (
             <div className="border-t border-border/50">{footer}</div>
           )}
         </div>
 
-        {/* Screen reader live region */}
         <div
           ref={liveRef}
           role="status"
