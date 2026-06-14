@@ -11,7 +11,7 @@ import SegmentedControl from "@/components/shared/segmented-control";
 import NextActivityCard from "@/components/guide/next-activity-card";
 import GuideTimeline from "@/components/guide/guide-timeline";
 import ContextualTipCard from "@/components/guide/contextual-tip-card";
-import MoriChat from "@/components/guide/mori-chat";
+import MoriComposer from "@/components/itinerary/mori-composer";
 
 const SEGMENT_OPTIONS = [
   { value: "planned", label: "Planned" },
@@ -217,7 +217,7 @@ export default function GuideClient() {
       </div>
 
       {/* ── Main scrollable content ── */}
-      <main className="flex-1 overflow-y-auto px-4 pb-36 lg:px-6 lg:pb-28 w-full">
+      <main className="flex-1 overflow-y-auto px-4 pb-28 lg:px-6 w-full">
         {!nextActivity ? (
           <div className="mx-auto max-w-7xl py-12 text-center">
             <p className="text-muted text-sm">No activities planned for this day.</p>
@@ -281,11 +281,12 @@ export default function GuideClient() {
         )}
       </main>
 
-      {/* ── Mori chat (above bottom nav) ── */}
-      <MoriChat
-        placeholder="Ask Mori about your day..."
-        emptyHint="Get live tips, adjust your timeline, or ask about your next stop."
-      />
+      {/* ── Mori composer (above bottom nav) ── */}
+      <div className="fixed bottom-[64px] left-0 right-0 z-20 bg-app-bg pb-3 pt-2 md:bottom-0">
+        <div className="mx-auto max-w-[1120px] px-5">
+          <MoriComposer placeholder="Ask Mori about your day..." />
+        </div>
+      </div>
     </div>
   );
 }

@@ -17,7 +17,7 @@ import MapDiscoveryFilterChips from "@/components/map-discovery/map-discovery-fi
 import MapDiscoveryControls from "@/components/map-discovery/map-discovery-controls";
 import PlacesBottomSheet from "@/components/map-discovery/places-bottom-sheet";
 import PlaceRow from "@/components/map-discovery/place-row";
-import MoriChat from "@/components/guide/mori-chat";
+import MoriComposer from "@/components/itinerary/mori-composer";
 import {
   discoveryPlaces,
   filterChips,
@@ -245,10 +245,11 @@ export default function MapClient() {
         )}
       </PlacesBottomSheet>
     </div>
-    <MoriChat
-      placeholder="Ask Mori to suggest places..."
-      emptyHint="Ask Mori for nearby spots, hidden gems, or restaurants in your destination."
-    />
+    <div className="fixed bottom-[64px] left-0 right-0 z-20 bg-app-bg pb-3 pt-2 md:bottom-0">
+      <div className="mx-auto max-w-[1120px] px-5">
+        <MoriComposer placeholder="Ask Mori to suggest places..." />
+      </div>
+    </div>
     </>
   );
 }
