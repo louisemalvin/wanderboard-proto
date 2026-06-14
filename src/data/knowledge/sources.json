@@ -1,0 +1,40 @@
+{
+  "sources": [
+    {
+      "id": "go-japan-tokyo-guide",
+      "title": "Japan National Tourism Organization — Tokyo Guide",
+      "url": "https://www.japan.travel/en/destinations/kanto/tokyo/",
+      "lastReviewed": "2026-04"
+    },
+    {
+      "id": "tokyo-metro-transit",
+      "title": "Tokyo Metro — Tourist Information",
+      "url": "https://www.tokyometro.jp/en/ticket/travel/index.html",
+      "lastReviewed": "2026-04"
+    },
+    {
+      "id": "jreast-train-info",
+      "title": "JR East — Train Information for Tokyo Area",
+      "url": "https://www.jreast.co.jp/e/",
+      "lastReviewed": "2026-04"
+    },
+    {
+      "id": "accessible-japan",
+      "title": "Accessible Japan — Tokyo Accessibility Guide",
+      "url": "https://www.accessible-japan.com/",
+      "lastReviewed": "2026-03"
+    },
+    {
+      "id": "tokyo-essentials-wikivoyage",
+      "title": "Wikivoyage — Tokyo",
+      "url": "https://en.wikivoyage.org/wiki/Tokyo",
+      "lastReviewed": "2026-04"
+    },
+    {
+      "id": "teamlabborderless-official",
+      "title": "teamLab Borderless — Official Website",
+      "url": "https://www.teamlab.art/e/borderless-azabudai/",
+      "lastReviewed": "2026-04"
+    }
+  ]
+}

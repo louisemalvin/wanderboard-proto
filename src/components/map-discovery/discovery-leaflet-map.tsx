@@ -16,6 +16,16 @@ type MapCommand = {
   placeId?: string;
 };
 
+export type SuggestionMarker = {
+  clientId: string;
+  name: string;
+  category: string;
+  lat: number;
+  lng: number;
+  confidence: "verified" | "approximate" | "missing";
+  reason: string;
+};
+
 interface DiscoveryLeafletMapProps {
   places: DiscoveryPlace[];
   highlightedIds: string[] | null;
@@ -23,6 +33,8 @@ interface DiscoveryLeafletMapProps {
   savedIds: Set<string>;
   selectedId: string | null;
   onSelectPlace: (id: string | null) => void;
+  suggestionMarkers?: SuggestionMarker[];
+  onSelectSuggestion?: (clientId: string) => void;
 }
 
 const PORTLAND_CENTER: [number, number] = [45.522, -122.711];
@@ -30,17 +42,27 @@ const PORTLAND_CENTER: [number, number] = [45.522, -122.711];
 function DiscoveryMapController({
   places,
   command,
+  suggestionMarkers,
 }: {
   places: DiscoveryPlace[];
   command: MapCommand | null;
+  suggestionMarkers?: SuggestionMarker[];
 }) {
   const map = useMap();
 
   useEffect(() => {
     if (places.length === 0) return;
     const bounds = places.map((place) => [place.lat, place.lng] as [number, number]);
-    map.fitBounds(bounds, { padding: [72, 72], maxZoom: 13 });
-  }, [places, map]);
+    // Include suggestion markers in bounds
+    const suggestBounds =
+      suggestionMarkers
+        ?.filter((s) => s.lat != null && s.lng != null)
+        .map((s) => [s.lat, s.lng] as [number, number]) ?? [];
+    const allBounds = [...bounds, ...suggestBounds];
+    if (allBounds.length > 0) {
+      map.fitBounds(allBounds, { padding: [72, 72], maxZoom: 13 });
+    }
+  }, [places, map, suggestionMarkers]);
 
   useEffect(() => {
     if (!command) return;
@@ -90,6 +112,17 @@ function markerStyle(saved: boolean, selected: boolean) {
   };
 }
 
+function suggestionMarkerStyle(confidence: string) {
+  switch (confidence) {
+    case "verified":
+      return { color: "#2563EB", fillColor: "#DBEAFE", fillOpacity: 1, weight: 2.5, radius: 8, dashArray: "" };
+    case "approximate":
+      return { color: "#D97706", fillColor: "#FEF3C7", fillOpacity: 0.9, weight: 2.5, radius: 8, dashArray: "4 3" };
+    default:
+      return { color: "#78716C", fillColor: "#E7E5E4", fillOpacity: 0.7, weight: 2, radius: 8, dashArray: "4 3" };
+  }
+}
+
 export default function DiscoveryLeafletMap({
   places,
   highlightedIds,
@@ -97,6 +130,8 @@ export default function DiscoveryLeafletMap({
   savedIds,
   selectedId,
   onSelectPlace,
+  suggestionMarkers,
+  onSelectSuggestion,
 }: DiscoveryLeafletMapProps) {
   return (
     <MapContainer
@@ -110,7 +145,9 @@ export default function DiscoveryLeafletMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       />
-      <DiscoveryMapController places={places} command={command} />
+      <DiscoveryMapController places={places} command={command} suggestionMarkers={suggestionMarkers} />
+
+      {/* Existing discovery places */}
       {places.map((place) => {
         const isHighlighted =
           highlightedIds === null || highlightedIds.includes(place.id);
@@ -149,6 +186,43 @@ export default function DiscoveryLeafletMap({
                 <br />
                 <span className="text-xs text-[#667066]">{place.city}</span>
                 <p className="mt-1 text-xs text-[#1F2A22]">{place.description}</p>
+              </div>
+            </Popup>
+          </CircleMarker>
+        );
+      })}
+
+      {/* Temporary suggestion markers */}
+      {suggestionMarkers?.map((marker) => {
+        if (marker.lat == null || marker.lng == null) return null;
+        const style = suggestionMarkerStyle(marker.confidence);
+        return (
+          <CircleMarker
+            key={`suggestion-${marker.clientId}`}
+            center={[marker.lat, marker.lng]}
+            radius={style.radius}
+            pathOptions={{
+              color: style.color,
+              fillColor: style.fillColor,
+              fillOpacity: style.fillOpacity,
+              weight: style.weight,
+              ...(style.dashArray ? { dashArray: style.dashArray } : {}),
+            }}
+            eventHandlers={{
+              click: () => {
+                onSelectSuggestion?.(marker.clientId);
+              },
+            }}
+          >
+            <Popup>
+              <div className="min-w-40 text-sm">
+                <strong>{marker.name}</strong>
+                <span className="ml-1 rounded bg-amber-100 px-1 text-[10px] text-amber-700">
+                  {marker.confidence === "verified" ? "Suggestion" : "Approx. suggestion"}
+                </span>
+                <br />
+                <span className="text-xs text-[#667066]">{marker.category}</span>
+                <p className="mt-1 text-xs text-[#1F2A22]">{marker.reason}</p>
               </div>
             </Popup>
           </CircleMarker>

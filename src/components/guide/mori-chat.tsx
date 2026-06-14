@@ -4,10 +4,27 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Send, Loader2, ChevronDown, Sparkles } from "lucide-react";
 import { useTripStore } from "@/stores/trip-store";
+import { GroundingStatus } from "@/components/shared/grounding-status";
+
+interface ChatResponsePayload {
+  explanation: string;
+  mutations: Record<string, unknown>;
+  grounding?: {
+    status: "grounded" | "no_results" | "unavailable";
+    sources: Array<{
+      id?: string;
+      title: string;
+      url?: string;
+      excerpt?: string;
+      lastReviewed?: string;
+    }>;
+  };
+  warnings?: string[];
+}
 
 type ChatMessage =
   | { role: "user"; content: string }
-  | { role: "mori"; content: string };
+  | { role: "mori"; content: string; grounding?: ChatResponsePayload["grounding"] };
 
 interface MoriChatProps {
   placeholder?: string;
@@ -52,7 +69,9 @@ export default function MoriChat({
         body: JSON.stringify({ message: trimmed, board }),
       });
 
-      const payload = await response.json();
+      const payload = (await response.json()) as ChatResponsePayload & {
+        error?: { code?: string; message?: string };
+      };
 
       if (!response.ok) {
         const msg =
@@ -67,7 +86,10 @@ export default function MoriChat({
 
       const explanation: string =
         payload.explanation ?? "I processed your request.";
-      setMessages((prev) => [...prev, { role: "mori", content: explanation }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "mori", content: explanation, grounding: payload.grounding },
+      ]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -168,14 +190,19 @@ export default function MoriChat({
                       className="mt-0.5 h-7 w-7 shrink-0 rounded-full"
                     />
                   )}
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
-                      msg.role === "user"
-                        ? "rounded-br-md bg-forest-dark text-white"
-                        : "rounded-bl-md border border-border bg-app-bg text-ink"
-                    }`}
-                  >
-                    {msg.content}
+                  <div className="flex max-w-[80%] flex-col gap-1.5">
+                    <div
+                      className={`rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                        msg.role === "user"
+                          ? "rounded-br-md bg-forest-dark text-white"
+                          : "rounded-bl-md border border-border bg-app-bg text-ink"
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
+                    {msg.role === "mori" && msg.grounding && (
+                      <GroundingStatus grounding={msg.grounding} />
+                    )}
                   </div>
                   {msg.role === "user" && (
                     <div className="mt-0.5 h-7 w-7 shrink-0 rounded-full bg-muted/40" />

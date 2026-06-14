@@ -1,22 +1,25 @@
 // ------------------------------------------------------------------
 // GET /api/ai/health
-// Diagnostic endpoint — always returns 200.
+// Diagnostic endpoint — returns safe configuration status.
+// Never exposes endpoints, keys, tokens, or subscription IDs.
 // ------------------------------------------------------------------
 
 import { NextResponse } from "next/server";
-import { hasAzureAI, getAIConfig } from "@/lib/azure-openai";
+import { hasAzureAI } from "@/lib/azure-openai";
+import { checkFoundryIQHealth } from "@/lib/ai/foundry-iq";
 
 export async function GET() {
-  if (!hasAzureAI()) {
-    return NextResponse.json({
-      configured: false,
-      reason: "not_configured",
-    });
-  }
+  const modelConfigured = hasAzureAI();
 
-  const config = getAIConfig()!;
+  const foundryIq = await checkFoundryIQHealth();
+
   return NextResponse.json({
-    configured: true,
-    deployment: config.deployment,
+    model: {
+      configured: modelConfigured,
+    },
+    foundryIq: {
+      configured: foundryIq.configured,
+      reachable: foundryIq.reachable,
+    },
   });
 }

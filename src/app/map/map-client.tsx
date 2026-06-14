@@ -6,7 +6,10 @@ import Link from "next/link";
 import { Bookmark, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { useTripStore } from "@/stores/trip-store";
+import { useMoriProposalStore } from "@/stores/mori-proposal-store";
 import type { Place } from "@/lib/trip-types";
+import type { PlaceSuggestion } from "@/lib/ai/mori-schemas";
+import type { SuggestionMarker } from "@/components/map-discovery/discovery-leaflet-map";
 import TripRequiredState from "@/components/shared/trip-required-state";
 import MapDiscoverySearch from "@/components/map-discovery/map-discovery-search";
 import MapDiscoveryFilterChips from "@/components/map-discovery/map-discovery-filter-chips";
@@ -58,6 +61,9 @@ export default function MapClient() {
   const board = useTripStore((s) => s.board);
   const savePlace = useTripStore((s) => s.savePlace);
   const unsavePlace = useTripStore((s) => s.unsavePlace);
+  const placeSuggestions = useMoriProposalStore((s) => s.placeSuggestions);
+  const removeSuggestion = useMoriProposalStore((s) => s.removePlaceSuggestion);
+  const saveSuggestion = useMoriProposalStore((s) => s.savePlaceSuggestion);
 
   const [hydrated, setHydrated] = useState(false);
   const [storeHasTrip, setStoreHasTrip] = useState(false);
@@ -66,6 +72,7 @@ export default function MapClient() {
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"all" | "saved">("all");
   const [mapCommand, setMapCommand] = useState<MapCommand | null>(null);
+  const [selectedSuggestionId, setSelectedSuggestionId] = useState<string | null>(null);
 
   useEffect(() => {
     const onHydrated = () => {
@@ -153,6 +160,21 @@ export default function MapClient() {
     setMapCommand({ id: Date.now(), type: "recenter" });
   }, []);
 
+  // Suggestion markers derived from AI place suggestions
+  const suggestionMarkers = useMemo<SuggestionMarker[]>(() => {
+    return placeSuggestions
+      .filter((s) => s.latitude != null && s.longitude != null)
+      .map((s) => ({
+        clientId: s.clientId,
+        name: s.name,
+        category: s.category,
+        lat: s.latitude!,
+        lng: s.longitude!,
+        confidence: s.coordinateConfidence,
+        reason: s.reason,
+      }));
+  }, [placeSuggestions]);
+
   const handleBookmarkToggle = useCallback((id: string) => {
     const tripId = currentTripId ?? useTripStore.getState().currentTripId;
     const tripBoard = board ?? useTripStore.getState().board;
@@ -168,6 +190,111 @@ export default function MapClient() {
       savePlace(tripId, discoveryToPlace(place));
     }
   }, [board, currentTripId, savePlace, unsavePlace]);
+
+  // AI suggestion handlers
+  const handlePreviewPlaceOnMap = useCallback((suggestion: PlaceSuggestion) => {
+    if (suggestion.latitude != null && suggestion.longitude != null) {
+      setMapCommand({
+        id: Date.now(),
+        type: "focus",
+        placeId: `suggestion-${suggestion.clientId}`,
+      });
+    }
+    setSelectedSuggestionId(suggestion.clientId);
+  }, []);
+
+  const handleSavePlaceSuggestion = useCallback(
+    (suggestion: PlaceSuggestion) => {
+      const tripId = currentTripId ?? useTripStore.getState().currentTripId;
+      if (!tripId) return;
+      const newPlace: Place = {
+        id: `place-${suggestion.clientId}`,
+        name: suggestion.name,
+        type: (suggestion.category as Place["type"]) ?? "attraction",
+        location: {
+          lat: suggestion.latitude ?? 0,
+          lng: suggestion.longitude ?? 0,
+        },
+        city: suggestion.destination ?? board?.destinationText ?? "",
+        country: "",
+        description: suggestion.description,
+        estimatedDurationMinutes: suggestion.estimatedDurationMinutes,
+        tags: suggestion.tags,
+        area: suggestion.neighbourhood,
+        estimatedCost: suggestion.estimatedCost
+          ? {
+              currency: suggestion.estimatedCost.currency ?? "USD",
+              min: suggestion.estimatedCost.min ?? 0,
+              max: suggestion.estimatedCost.max ?? 0,
+            }
+          : undefined,
+      };
+      savePlace(tripId, newPlace);
+      saveSuggestion(suggestion.clientId);
+      setSelectedSuggestionId(null);
+    },
+    [board?.destinationText, currentTripId, savePlace, saveSuggestion],
+  );
+
+  const handleDismissPlaceSuggestion = useCallback(
+    (suggestion: PlaceSuggestion) => {
+      removeSuggestion(suggestion.clientId);
+      if (selectedSuggestionId === suggestion.clientId) {
+        setSelectedSuggestionId(null);
+      }
+    },
+    [removeSuggestion, selectedSuggestionId],
+  );
+
+  const handleAssignPlaceToDay = useCallback(
+    (suggestion: PlaceSuggestion, dayId: string) => {
+      const tripId = currentTripId ?? useTripStore.getState().currentTripId;
+      if (!tripId) return;
+      // Save the place first
+      const newPlace: Place = {
+        id: `place-${suggestion.clientId}`,
+        name: suggestion.name,
+        type: (suggestion.category as Place["type"]) ?? "attraction",
+        location: {
+          lat: suggestion.latitude ?? 0,
+          lng: suggestion.longitude ?? 0,
+        },
+        city: suggestion.destination ?? board?.destinationText ?? "",
+        country: "",
+        description: suggestion.description,
+        estimatedDurationMinutes: suggestion.estimatedDurationMinutes,
+        tags: suggestion.tags,
+        area: suggestion.neighbourhood,
+        estimatedCost: suggestion.estimatedCost
+          ? {
+              currency: suggestion.estimatedCost.currency ?? "USD",
+              min: suggestion.estimatedCost.min ?? 0,
+              max: suggestion.estimatedCost.max ?? 0,
+            }
+          : undefined,
+      };
+      savePlace(tripId, newPlace);
+      // Then assign
+      useTripStore.getState().assignPlaceToDay(tripId, dayId, newPlace.id);
+      saveSuggestion(suggestion.clientId);
+      setSelectedSuggestionId(null);
+    },
+    [board?.destinationText, currentTripId, savePlace, saveSuggestion],
+  );
+
+  // Day options for assignment dropdown
+  const dayOptions = useMemo(
+    () =>
+      board?.days.map((d) => ({
+        id: d.id,
+        label: `Day ${d.dayNumber}: ${d.title}`,
+      })) ?? [],
+    [board?.days],
+  );
+
+  const handleFollowUpSelect = useCallback(() => {
+    // Scroll to the Mori composer to show the new message
+  }, []);
 
   if (hydrated && !storeHasTrip) {
     return (
@@ -193,6 +320,18 @@ export default function MapClient() {
             savedIds={savedIds}
             selectedId={selectedPlaceId}
             onSelectPlace={handleSelectPlace}
+            suggestionMarkers={suggestionMarkers}
+            onSelectSuggestion={(clientId) => {
+              setSelectedSuggestionId(clientId);
+              const marker = suggestionMarkers.find((m) => m.clientId === clientId);
+              if (marker) {
+                setMapCommand({
+                  id: Date.now(),
+                  type: "focus",
+                  placeId: `suggestion-${clientId}`,
+                });
+              }
+            }}
           />
 
           <MapDiscoverySearch
@@ -273,7 +412,16 @@ export default function MapClient() {
 
           {/* Mori composer on map */}
           <div className="absolute bottom-4 left-1/2 z-[700] hidden w-[min(620px,calc(100%-32px))] -translate-x-1/2 lg:block">
-            <MoriComposer placeholder="Ask Mori to suggest places…" />
+            <MoriComposer
+              surface="plan_discover"
+              placeholder="Ask Mori to suggest places..."
+              onPreviewPlaceOnMap={handlePreviewPlaceOnMap}
+              onSavePlace={handleSavePlaceSuggestion}
+              onDismissPlace={handleDismissPlaceSuggestion}
+              onAssignPlaceToDay={handleAssignPlaceToDay}
+              dayOptions={dayOptions}
+              onFollowUpSelect={handleFollowUpSelect}
+            />
           </div>
         </div>
 
@@ -340,7 +488,16 @@ export default function MapClient() {
       {/* Mori composer — mobile */}
       <div className="pointer-events-none fixed bottom-[64px] left-0 right-0 z-20 bg-transparent pb-3 pt-2 md:bottom-0 lg:hidden">
         <div className="mx-auto max-w-[1120px] px-5">
-          <MoriComposer placeholder="Ask Mori to suggest places…" />
+          <MoriComposer
+            surface="plan_discover"
+            placeholder="Ask Mori to suggest places..."
+            onPreviewPlaceOnMap={handlePreviewPlaceOnMap}
+            onSavePlace={handleSavePlaceSuggestion}
+            onDismissPlace={handleDismissPlaceSuggestion}
+            onAssignPlaceToDay={handleAssignPlaceToDay}
+            dayOptions={dayOptions}
+            onFollowUpSelect={handleFollowUpSelect}
+          />
         </div>
       </div>
     </>

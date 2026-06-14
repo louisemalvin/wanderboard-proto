@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { useTripStore } from "@/stores/trip-store";
+import { useMoriProposalStore } from "@/stores/mori-proposal-store";
 import type { Place, TripBoard } from "@/lib/trip-types";
 import type { GuideActivity } from "@/components/guide/guide-types";
+import type { GuideAction } from "@/lib/ai/mori-schemas";
 import TripRequiredState from "@/components/shared/trip-required-state";
 import NextActivityCard from "@/components/guide/next-activity-card";
 import GuideTimeline from "@/components/guide/guide-timeline";
@@ -145,6 +147,71 @@ export default function GuideClient() {
       : segment === "done"
         ? completedActivities
         : liveActivities;
+
+  // Guide action handlers
+  const handleGuideAction = useCallback(
+    (action: GuideAction) => {
+      switch (action.type) {
+        case "navigate_to_place":
+          // Could show navigation UI
+          break;
+        case "show_on_map":
+          // Could highlight on map or open map view
+          break;
+        case "mark_place_skipped":
+          if (board && action.dayId && action.placeId) {
+            useMoriProposalStore.getState().removeGuideAction(0);
+          }
+          break;
+        case "move_to_later":
+          if (board && action.dayId && action.placeId) {
+            // Move to the last position in the day
+            const plan = board.dayPlans.find((p) => p.dayId === action.dayId);
+            if (plan) {
+              const newIds = plan.assignedPlaceIds.filter(
+                (id) => id !== action.placeId,
+              );
+              newIds.push(action.placeId);
+              useTripStore.getState().updateTrip(board.id, {
+                dayPlans: board.dayPlans.map((p) =>
+                  p.dayId === action.dayId
+                    ? { ...p, assignedPlaceIds: newIds }
+                    : p,
+                ),
+              });
+              useMoriProposalStore.getState().removeGuideAction(0);
+            }
+          }
+          break;
+        case "open_day_plan":
+          // Could navigate to itinerary
+          break;
+        case "propose_day_adjustment":
+          // Store the proposal for review
+          if (action.proposal) {
+            useMoriProposalStore.getState().setMoriResponse({
+              surface: "guide",
+              itineraryProposals: [action.proposal],
+            });
+          }
+          break;
+        case "suggest_nearby_place":
+          // Store the suggested place
+          if (action.place) {
+            useMoriProposalStore.getState().setMoriResponse({
+              surface: "guide",
+              placeSuggestions: [action.place],
+            });
+          }
+          break;
+      }
+    },
+    [board],
+  );
+
+  const handleFollowUpSelect = useCallback(() => {
+    // Scroll to composer
+  }, []);
 
   if (hydrated && !storeHasTrip) {
     return (
@@ -342,7 +409,12 @@ export default function GuideClient() {
       {/* Mori composer */}
       <div className="pointer-events-none fixed bottom-[64px] left-0 right-0 z-20 bg-transparent pb-3 pt-2 md:bottom-0">
         <div className="mx-auto max-w-[1120px] px-5">
-          <MoriComposer placeholder="Ask Mori about your day..." />
+          <MoriComposer
+            surface="guide"
+            placeholder="Ask Mori about your day..."
+            onGuideAction={handleGuideAction}
+            onFollowUpSelect={handleFollowUpSelect}
+          />
         </div>
       </div>
     </div>

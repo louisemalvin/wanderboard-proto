@@ -40,6 +40,9 @@ yarn-error.log*
 .env*.local
 .env.local
 
+# azure (generated config, not committed)
+.azure/
+
 # vercel
 .vercel
 

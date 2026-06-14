@@ -4,12 +4,13 @@
 // ------------------------------------------------------------------
 
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import {
   hasAzureAI,
   generateStructuredResponse,
   StructuredResponseError,
 } from "@/lib/azure-openai";
+import { generateBoardRequestSchema, tripBoardModelSchema, type tripBoardSchema as TripBoardSchema } from "@/lib/ai/schemas";
+import type { Place } from "@/lib/trip-types";
 import type { TripBoard, TripPace, BudgetLevel } from "@/lib/trip-types";
 
 // ------------------------------------------------------------------
@@ -25,7 +26,7 @@ function errorResponse(
 }
 
 // ------------------------------------------------------------------
-// Request types
+// Types
 // ------------------------------------------------------------------
 
 interface GenerateBoardRequest {
@@ -37,89 +38,8 @@ interface GenerateBoardRequest {
   interests?: string[];
 }
 
-// Zod schema for request validation
-const generateBoardRequestSchema = z.object({
-  prompt: z.string().min(1, "prompt is required and must not be empty"),
-  destination: z.string().optional(),
-  durationDays: z.number().int().positive().optional(),
-  pace: z.enum(["relaxed", "balanced", "packed"]).optional(),
-  budgetLevel: z.enum(["low", "medium", "high"]).optional(),
-  interests: z.array(z.string()).optional(),
-});
-
 // ------------------------------------------------------------------
-// Zod schemas matching TripBoard shape (for AI response validation)
-// ------------------------------------------------------------------
-
-const geoPointSchema = z.object({
-  lat: z.number(),
-  lng: z.number(),
-});
-
-const moneyRangeSchema = z.object({
-  currency: z.string(),
-  min: z.number(),
-  max: z.number(),
-});
-
-const placeTypeEnum = z.enum([
-  "attraction",
-  "area",
-  "hotel",
-  "food",
-  "cafe",
-  "shopping",
-  "nature",
-  "ticket",
-  "custom",
-]);
-
-const placeSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  type: placeTypeEnum,
-  location: geoPointSchema,
-  city: z.string(),
-  country: z.string(),
-  description: z.string(),
-  estimatedCost: moneyRangeSchema.optional(),
-  estimatedDurationMinutes: z.number().optional(),
-  tags: z.array(z.string()).optional(),
-  area: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-const tripDaySchema = z.object({
-  id: z.string(),
-  dayNumber: z.number().int().positive(),
-  title: z.string(),
-  summary: z.string(),
-});
-
-const dayPlanSchema = z.object({
-  dayId: z.string(),
-  assignedPlaceIds: z.array(z.string()),
-});
-
-const tripBoardSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  destinationText: z.string(),
-  durationDays: z.number().int().positive(),
-  pace: z.enum(["relaxed", "balanced", "packed"]),
-  budgetLevel: z.enum(["low", "medium", "high"]).optional(),
-  interests: z.array(z.string()),
-  assumptions: z.array(z.string()),
-  warnings: z.array(z.string()),
-  days: z.array(tripDaySchema),
-  savedPlaces: z.record(z.string(), placeSchema),
-  dayPlans: z.array(dayPlanSchema),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
-
-// ------------------------------------------------------------------
-// System prompt (from architecture spec §6.6)
+// System prompt
 // ------------------------------------------------------------------
 
 const SYSTEM_PROMPT = `You are a travel planning assistant. Generate a realistic multi-day trip
@@ -145,8 +65,6 @@ function postProcessBoard(board: TripBoard): TripBoard {
   const validDayIds = new Set(board.days.map((d) => d.id));
   const validPlaceIds = new Set(Object.keys(board.savedPlaces));
 
-  // Filter dayPlans: remove entries referencing non-existent days,
-  // and within each entry filter out non-existent place IDs.
   const filteredDayPlans = board.dayPlans
     .filter((dp) => validDayIds.has(dp.dayId))
     .map((dp) => ({
@@ -200,7 +118,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Build user message from the request fields
   const userMessageParts: string[] = [req.prompt];
   if (req.destination) {
     userMessageParts.push(`Destination: ${req.destination}`);
@@ -221,20 +138,38 @@ export async function POST(request: NextRequest) {
 
   // --- AI call ---
   try {
-    const board = await generateStructuredResponse<TripBoard>(
+    // Use model-safe schema with array-form savedPlaces
+    interface TripBoardModelOutput {
+      id: string; title: string; destinationText: string; durationDays: number;
+      pace: TripPace; budgetLevel?: BudgetLevel; interests: string[];
+      assumptions: string[]; warnings: string[]; days: TripBoard["days"];
+      savedPlaces: Place[]; dayPlans: TripBoard["dayPlans"];
+      createdAt: string; updatedAt: string;
+    }
+
+    const modelOutput = await generateStructuredResponse<TripBoardModelOutput>(
       SYSTEM_PROMPT,
       userMessage,
       "trip_board",
-      tripBoardSchema,
+      tripBoardModelSchema,
     );
 
-    // --- Post-processing validation ---
+    // Convert savedPlaces array back to Record for application use
+    const savedPlacesRecord: Record<string, Place> = {};
+    for (const place of modelOutput.savedPlaces) {
+      savedPlacesRecord[place.id] = place;
+    }
+
+    const board: TripBoard = {
+      ...modelOutput,
+      savedPlaces: savedPlacesRecord,
+    };
+
     const cleaned = postProcessBoard(board);
 
     return NextResponse.json({ board: cleaned });
   } catch (error) {
     if (error instanceof StructuredResponseError) {
-      // Map internal error codes to route-level error codes
       if (error.code === "content_filtered") {
         return errorResponse(
           "content_filtered",
@@ -258,7 +193,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Catch-all
     return errorResponse(
       "ai_failed",
       "An unexpected error occurred. Please try again.",

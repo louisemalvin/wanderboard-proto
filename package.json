@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "echo \"No test runner configured. Add vitest or jest to run tests.\" && exit 0",
+    "azure:discover": "bash scripts/azure/discover.sh",
+    "azure:provision": "bash scripts/azure/provision-foundry-iq.sh",
+    "azure:index": "npx tsx scripts/azure/create-search-assets.ts",
+    "azure:verify": "npx tsx scripts/azure/verify-foundry-iq.ts"
   },
   "dependencies": {
     "@types/leaflet": "^1.9.21",

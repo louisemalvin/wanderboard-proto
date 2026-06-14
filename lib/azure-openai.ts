@@ -86,7 +86,8 @@ export class StructuredResponseError extends Error {
     | "validation_failed"
     | "ai_error"
     | "content_filtered"
-    | "parse_failed";
+    | "parse_failed"
+    | "rate_limited";
 
   constructor(
     message: string,
@@ -94,7 +95,8 @@ export class StructuredResponseError extends Error {
       | "validation_failed"
       | "ai_error"
       | "content_filtered"
-      | "parse_failed",
+      | "parse_failed"
+      | "rate_limited",
   ) {
     super(message);
     this.name = "StructuredResponseError";
@@ -221,7 +223,21 @@ export async function generateStructuredResponse<T>(
       );
     }
 
-    // Catch-all for network, auth, rate-limit, and other Azure errors
+    // Detect rate-limit errors (Azure returns 429)
+    if (
+      errMsg.includes("429") ||
+      errMsg.includes("rate limit") ||
+      errMsg.includes("rate_limit") ||
+      errMsg.includes("exceeded rate limit") ||
+      (error && typeof error === "object" && "status" in error && (error as { status: number }).status === 429)
+    ) {
+      throw new StructuredResponseError(
+        "Mori is busy right now. Please wait a moment and try again.",
+        "rate_limited",
+      );
+    }
+
+    // Catch-all for network, auth, and other Azure errors
     throw new StructuredResponseError(
       "The AI service is currently unavailable. Please try again later.",
       "ai_error",

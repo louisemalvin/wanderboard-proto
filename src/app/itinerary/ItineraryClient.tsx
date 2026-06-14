@@ -5,6 +5,7 @@ import { Bookmark, Plus, Wand2 } from "lucide-react";
 import Link from "next/link";
 import { useTripStore } from "@/stores/trip-store";
 import type { TripBoard, Place } from "@/lib/trip-types";
+import type { ItineraryProposal } from "@/lib/ai/mori-schemas";
 import TripRequiredState from "@/components/shared/trip-required-state";
 import ItinerarySection from "@/components/itinerary/itinerary-section";
 import type { SectionInfo } from "@/components/itinerary/itinerary-section";
@@ -214,6 +215,125 @@ export default function ItineraryClient() {
     },
     [activeDay, board, unassignPlaceFromDay],
   );
+
+  // AI proposal handlers
+  const handleApplyProposal = useCallback(
+    async (proposal: ItineraryProposal) => {
+      if (!board) throw new Error("No active trip");
+
+      const currentBoard = useTripStore.getState().board;
+      if (!currentBoard) throw new Error("Board not found");
+
+      // Validate all referenced entities exist
+      const validDayIds = new Set(currentBoard.days.map((d) => d.id));
+      const validPlaceIds = new Set(Object.keys(currentBoard.savedPlaces));
+
+      for (const op of proposal.operations) {
+        if ("dayId" in op && op.dayId && !validDayIds.has(op.dayId)) {
+          throw new Error(
+            `Referenced day no longer exists. Please regenerate the proposal.`,
+          );
+        }
+        if ("placeId" in op && op.placeId && !validPlaceIds.has(op.placeId)) {
+          throw new Error(
+            `Referenced place no longer exists. Please regenerate the proposal.`,
+          );
+        }
+        if ("fromDayId" in op && op.fromDayId && !validDayIds.has(op.fromDayId)) {
+          throw new Error(
+            `Referenced day no longer exists. Please regenerate the proposal.`,
+          );
+        }
+        if ("toDayId" in op && op.toDayId && !validDayIds.has(op.toDayId)) {
+          throw new Error(
+            `Referenced day no longer exists. Please regenerate the proposal.`,
+          );
+        }
+      }
+
+      // Apply operations atomically
+      const dayPlans = currentBoard.dayPlans.map((plan) => ({
+        ...plan,
+        assignedPlaceIds: [...plan.assignedPlaceIds],
+      }));
+
+      for (const op of proposal.operations) {
+        switch (op.type) {
+          case "reorder_places": {
+            const plan = dayPlans.find((p) => p.dayId === op.dayId);
+            if (plan && op.orderedPlaceIds) {
+              // Only keep IDs that exist in both the plan and the proposal
+              const existingIds = new Set(plan.assignedPlaceIds);
+              plan.assignedPlaceIds = op.orderedPlaceIds.filter((id) =>
+                existingIds.has(id),
+              );
+            }
+            break;
+          }
+          case "assign_place": {
+            const plan = dayPlans.find((p) => p.dayId === op.dayId);
+            if (plan && op.placeId && !plan.assignedPlaceIds.includes(op.placeId)) {
+              if (op.position != null && op.position < plan.assignedPlaceIds.length) {
+                plan.assignedPlaceIds.splice(op.position, 0, op.placeId);
+              } else {
+                plan.assignedPlaceIds.push(op.placeId);
+              }
+            }
+            break;
+          }
+          case "unassign_place": {
+            const plan = dayPlans.find((p) => p.dayId === op.dayId);
+            if (plan && op.placeId) {
+              plan.assignedPlaceIds = plan.assignedPlaceIds.filter(
+                (id) => id !== op.placeId,
+              );
+            }
+            break;
+          }
+          case "move_place": {
+            const fromPlan = dayPlans.find((p) => p.dayId === op.fromDayId);
+            const toPlan = dayPlans.find((p) => p.dayId === op.toDayId);
+            if (fromPlan && op.placeId) {
+              fromPlan.assignedPlaceIds = fromPlan.assignedPlaceIds.filter(
+                (id) => id !== op.placeId,
+              );
+            }
+            if (toPlan && op.placeId && !toPlan.assignedPlaceIds.includes(op.placeId)) {
+              if (op.position != null && op.position < toPlan.assignedPlaceIds.length) {
+                toPlan.assignedPlaceIds.splice(op.position, 0, op.placeId);
+              } else {
+                toPlan.assignedPlaceIds.push(op.placeId);
+              }
+            }
+            break;
+          }
+          case "update_day_summary": {
+            const newSummary = op.summary;
+            if (newSummary) {
+              useTripStore.getState().updateTrip(currentBoard.id, {
+                days: currentBoard.days.map((d) =>
+                  d.id === op.dayId ? { ...d, summary: newSummary } : d,
+                ),
+              });
+            }
+            break;
+          }
+        }
+      }
+
+      // Commit all day plan changes
+      useTripStore.getState().updateTrip(currentBoard.id, { dayPlans });
+    },
+    [board],
+  );
+
+  const handleDismissProposal = useCallback(() => {
+    // Already handled by MoriComposer via proposal store
+  }, []);
+
+  const currentDayLabel = activeDay
+    ? `Day ${activeDay.dayNumber}: ${activeDay.title}`
+    : undefined;
 
   if (hydrated && !storeHasTrip) {
     return (
@@ -503,7 +623,12 @@ export default function ItineraryClient() {
 
       <div className="pointer-events-none fixed bottom-[64px] left-0 right-0 z-20 bg-transparent pb-3 pt-2 md:bottom-0">
         <div className="mx-auto max-w-[1120px] px-5">
-          <MoriComposer />
+          <MoriComposer
+            surface="day_itinerary"
+            onApplyProposal={handleApplyProposal}
+            onDismissProposal={handleDismissProposal}
+            currentDayLabel={currentDayLabel}
+          />
         </div>
       </div>
     </div>
