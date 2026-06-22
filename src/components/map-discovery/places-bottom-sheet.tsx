@@ -205,7 +205,7 @@ export default function PlacesBottomSheet({
       {/* Mobile bottom sheet (hidden at lg+) */}
       <div
         ref={sheetRef}
-        className="fixed bottom-0 left-0 right-0 z-[60] bg-surface rounded-t-2xl border-t border-border shadow-surface transition-[height] duration-300 ease-out overflow-hidden lg:hidden"
+        className="fixed bottom-16 left-0 right-0 z-[60] bg-surface rounded-t-2xl border-t border-border shadow-surface transition-[height] duration-300 ease-out overflow-hidden lg:hidden"
         style={{
           height: isDragging ? `${displayHeight}px` : SHEET_HEIGHTS[state],
         }}
