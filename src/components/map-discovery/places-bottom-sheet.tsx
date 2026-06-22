@@ -21,13 +21,17 @@ export default function PlacesBottomSheet({
 }: PlacesBottomSheetProps) {
   return (
     <div
-      className="flex flex-col min-h-0 overflow-hidden border-t border-[color:var(--wb-border)] max-h-[50vh] lg:max-h-none lg:border-t-0 lg:border-l lg:w-[340px]"
+      className="hidden min-h-0 lg:flex lg:flex-col lg:overflow-hidden"
       role="region"
       aria-label={`${title}, ${count} places`}
-      style={{ background: "#FAF8F3" }}
+      style={{
+        background: "#FAF8F3",
+        borderLeft: "1px solid rgba(31, 42, 34, 0.12)",
+        width: 340,
+      }}
     >
       {/* Header */}
-      <div className="shrink-0 px-4 pt-4 lg:pt-5">
+      <div className="shrink-0 px-4 pt-5">
         <h2 className="text-base font-semibold text-[color:var(--wb-ink)]">
           Discover places
         </h2>
