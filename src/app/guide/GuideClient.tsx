@@ -407,7 +407,7 @@ export default function GuideClient() {
       </main>
 
       {/* Mori composer */}
-      <div className="pointer-events-none fixed bottom-[64px] left-0 right-0 z-20 bg-transparent pb-3 pt-2 md:bottom-0">
+      <div className="pointer-events-none fixed bottom-[64px] left-0 right-0 z-20 bg-transparent pb-3 pt-2 md:bottom-0 md:z-50">
         <div className="mx-auto max-w-[1120px] px-5">
           <MoriComposer
             surface="guide"

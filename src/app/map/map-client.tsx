@@ -309,10 +309,10 @@ export default function MapClient() {
 
   return (
     <>
-      <div className="relative h-[calc(100vh-7rem)] min-h-[620px] w-full bg-[color:var(--wb-bg)] md:h-screen md:min-h-0 lg:grid" style={{ gridTemplateColumns: "minmax(0, 1fr) 340px" }}>
+      <div className="relative flex h-[calc(100vh-7rem)] min-h-[620px] w-full flex-col bg-[color:var(--wb-bg)] md:h-screen md:min-h-0 lg:grid" style={{ gridTemplateColumns: "minmax(0, 1fr) 340px" }}>
         <h1 className="sr-only">Map &amp; Discovery</h1>
 
-        <div className="relative min-h-0 overflow-hidden">
+        <div className="relative min-h-0 flex-1 overflow-hidden">
           <DiscoveryLeafletMap
             places={discoveryPlaces}
             highlightedIds={markerHighlightIds}
